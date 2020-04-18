@@ -10,16 +10,11 @@ import styled from "styled-components"
 import carData from "./carData"
 import styles from "./Table.module.scss"
 import classnames from "classnames/bind"
+import AutoSizer from "./AutoSizer"
 
 const cx = classnames.bind(styles)
 
 interface TableProps {}
-type Dimensions = Pick<BoundingRect, "height" | "width">
-
-const Container = styled.div`
-  width: 100%;
-  height: 100%;
-`
 
 const VirtualList = styled(VariableSizeList)`
   box-sizing: border-box;
@@ -82,31 +77,18 @@ const renderRow = (props: {
 const getItemSize = (index: number): number => renderableCarData[index].height
 
 export default function Table(_props: TableProps): ReactElement {
-  const [dimensions, setDimensions] = useState<Dimensions>({
-    width: -1,
-    height: -1,
-  })
-
-  const handleResize = useCallback((contentRect: ContentRect) => {
-    if (contentRect.bounds) {
-      setDimensions(contentRect.bounds)
-    }
-  }, [])
-
   return (
-    <Measure bounds onResize={handleResize}>
-      {({ measureRef }) => (
-        <Container ref={measureRef}>
-          <VirtualList
-            height={dimensions.height}
-            itemCount={carData.length}
-            itemSize={getItemSize}
-            width={dimensions.width}
-          >
-            {renderRow}
-          </VirtualList>
-        </Container>
+    <AutoSizer>
+      {({ dimensions }) => (
+        <VirtualList
+          height={dimensions.height}
+          itemCount={carData.length}
+          itemSize={getItemSize}
+          width={dimensions.width}
+        >
+          {renderRow}
+        </VirtualList>
       )}
-    </Measure>
+    </AutoSizer>
   )
 }

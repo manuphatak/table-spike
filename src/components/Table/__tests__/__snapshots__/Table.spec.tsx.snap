@@ -24,6 +24,12 @@ exports[`render matches snapshot 1`] = `
   -webkit-flex-flow: row nowrap;
   -ms-flex-flow: row nowrap;
   flex-flow: row nowrap;
+  margin: 0;
+  padding: 0;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
 }
 
 .c3 {
@@ -39,10 +45,10 @@ exports[`render matches snapshot 1`] = `
 >
   <div
     class="c1 table__table"
-    style="position:relative;height:-1px;width:-1px;overflow:auto;-webkit-overflow-scrolling:touch;will-change:transform;direction:ltr"
+    style="position:relative;height:400px;width:1600px;overflow:auto;-webkit-overflow-scrolling:touch;will-change:transform;direction:ltr"
   >
     <div
-      style="height:50044px;width:100%"
+      style="height:53128px;width:100%"
     >
       <div
         class="c2 table__head"
@@ -104,8 +110,18 @@ exports[`render matches snapshot 1`] = `
         </div>
       </div>
       <div
-        class="c2 table__body-row"
+        class="c2 table__group-row table__group-row__content"
         style="position:absolute;left:0;top:48px;height:48px;width:100%"
+      >
+        <div
+          class="table__group-row__title"
+        >
+          Mercury
+        </div>
+      </div>
+      <div
+        class="c2 table__body-row"
+        style="position:absolute;left:0;top:96px;height:48px;width:100%"
       >
         <div
           class="c3 table__td"
@@ -164,7 +180,7 @@ exports[`render matches snapshot 1`] = `
       </div>
       <div
         class="c2 table__body-row"
-        style="position:absolute;left:0;top:96px;height:48px;width:100%"
+        style="position:absolute;left:0;top:144px;height:48px;width:100%"
       >
         <div
           class="c3 table__td"
@@ -172,7 +188,7 @@ exports[`render matches snapshot 1`] = `
           <label
             class="table__text-cell"
           >
-            Ford
+            Mercury
           </label>
         </div>
         <div
@@ -181,7 +197,7 @@ exports[`render matches snapshot 1`] = `
           <label
             class="table__text-cell"
           >
-            Festiva
+            Grand Marquis
           </label>
         </div>
         <div
@@ -190,7 +206,7 @@ exports[`render matches snapshot 1`] = `
           <label
             class="table__text-cell"
           >
-            1989
+            1985
           </label>
         </div>
         <div
@@ -199,7 +215,7 @@ exports[`render matches snapshot 1`] = `
           <label
             class="table__text-cell"
           >
-            Japan
+            Indonesia
           </label>
         </div>
         <div
@@ -208,7 +224,7 @@ exports[`render matches snapshot 1`] = `
           <label
             class="table__text-cell"
           >
-            $9988.21
+            $3382.45
           </label>
         </div>
         <div
@@ -217,7 +233,420 @@ exports[`render matches snapshot 1`] = `
           <label
             class="table__text-cell"
           >
-            implement next-generation channels
+            disintermediate impactful e-business
+          </label>
+        </div>
+      </div>
+      <div
+        class="c2 table__body-row"
+        style="position:absolute;left:0;top:192px;height:48px;width:100%"
+      >
+        <div
+          class="c3 table__td"
+        >
+          <label
+            class="table__text-cell"
+          >
+            Mercury
+          </label>
+        </div>
+        <div
+          class="c3 table__td"
+        >
+          <label
+            class="table__text-cell"
+          >
+            Mountaineer
+          </label>
+        </div>
+        <div
+          class="c3 table__td"
+        >
+          <label
+            class="table__text-cell"
+          >
+            2001
+          </label>
+        </div>
+        <div
+          class="c3 table__td"
+        >
+          <label
+            class="table__text-cell"
+          >
+            China
+          </label>
+        </div>
+        <div
+          class="c3 table__td"
+        >
+          <label
+            class="table__text-cell"
+          >
+            $3146.50
+          </label>
+        </div>
+        <div
+          class="c3 table__td"
+        >
+          <label
+            class="table__text-cell"
+          >
+            incentivize world-class web-readiness
+          </label>
+        </div>
+      </div>
+      <div
+        class="c2 table__body-row"
+        style="position:absolute;left:0;top:240px;height:48px;width:100%"
+      >
+        <div
+          class="c3 table__td"
+        >
+          <label
+            class="table__text-cell"
+          >
+            Mercury
+          </label>
+        </div>
+        <div
+          class="c3 table__td"
+        >
+          <label
+            class="table__text-cell"
+          >
+            Monterey
+          </label>
+        </div>
+        <div
+          class="c3 table__td"
+        >
+          <label
+            class="table__text-cell"
+          >
+            2005
+          </label>
+        </div>
+        <div
+          class="c3 table__td"
+        >
+          <label
+            class="table__text-cell"
+          >
+            China
+          </label>
+        </div>
+        <div
+          class="c3 table__td"
+        >
+          <label
+            class="table__text-cell"
+          >
+            $3586.33
+          </label>
+        </div>
+        <div
+          class="c3 table__td"
+        >
+          <label
+            class="table__text-cell"
+          >
+            extend killer ROI
+          </label>
+        </div>
+      </div>
+      <div
+        class="c2 table__body-row"
+        style="position:absolute;left:0;top:288px;height:48px;width:100%"
+      >
+        <div
+          class="c3 table__td"
+        >
+          <label
+            class="table__text-cell"
+          >
+            Mercury
+          </label>
+        </div>
+        <div
+          class="c3 table__td"
+        >
+          <label
+            class="table__text-cell"
+          >
+            Capri
+          </label>
+        </div>
+        <div
+          class="c3 table__td"
+        >
+          <label
+            class="table__text-cell"
+          >
+            1992
+          </label>
+        </div>
+        <div
+          class="c3 table__td"
+        >
+          <label
+            class="table__text-cell"
+          >
+            China
+          </label>
+        </div>
+        <div
+          class="c3 table__td"
+        >
+          <label
+            class="table__text-cell"
+          >
+            $6812.68
+          </label>
+        </div>
+        <div
+          class="c3 table__td"
+        >
+          <label
+            class="table__text-cell"
+          >
+            harness transparent users
+          </label>
+        </div>
+      </div>
+      <div
+        class="c2 table__body-row"
+        style="position:absolute;left:0;top:336px;height:48px;width:100%"
+      >
+        <div
+          class="c3 table__td"
+        >
+          <label
+            class="table__text-cell"
+          >
+            Mercury
+          </label>
+        </div>
+        <div
+          class="c3 table__td"
+        >
+          <label
+            class="table__text-cell"
+          >
+            Sable
+          </label>
+        </div>
+        <div
+          class="c3 table__td"
+        >
+          <label
+            class="table__text-cell"
+          >
+            2002
+          </label>
+        </div>
+        <div
+          class="c3 table__td"
+        >
+          <label
+            class="table__text-cell"
+          >
+            Indonesia
+          </label>
+        </div>
+        <div
+          class="c3 table__td"
+        >
+          <label
+            class="table__text-cell"
+          >
+            $8796.52
+          </label>
+        </div>
+        <div
+          class="c3 table__td"
+        >
+          <label
+            class="table__text-cell"
+          >
+            envisioneer integrated channels
+          </label>
+        </div>
+      </div>
+      <div
+        class="c2 table__body-row"
+        style="position:absolute;left:0;top:384px;height:48px;width:100%"
+      >
+        <div
+          class="c3 table__td"
+        >
+          <label
+            class="table__text-cell"
+          >
+            Mercury
+          </label>
+        </div>
+        <div
+          class="c3 table__td"
+        >
+          <label
+            class="table__text-cell"
+          >
+            Lynx
+          </label>
+        </div>
+        <div
+          class="c3 table__td"
+        >
+          <label
+            class="table__text-cell"
+          >
+            1984
+          </label>
+        </div>
+        <div
+          class="c3 table__td"
+        >
+          <label
+            class="table__text-cell"
+          >
+            Indonesia
+          </label>
+        </div>
+        <div
+          class="c3 table__td"
+        >
+          <label
+            class="table__text-cell"
+          >
+            $6908.80
+          </label>
+        </div>
+        <div
+          class="c3 table__td"
+        >
+          <label
+            class="table__text-cell"
+          >
+            incubate viral action-items
+          </label>
+        </div>
+      </div>
+      <div
+        class="c2 table__body-row"
+        style="position:absolute;left:0;top:432px;height:48px;width:100%"
+      >
+        <div
+          class="c3 table__td"
+        >
+          <label
+            class="table__text-cell"
+          >
+            Mercury
+          </label>
+        </div>
+        <div
+          class="c3 table__td"
+        >
+          <label
+            class="table__text-cell"
+          >
+            Mariner
+          </label>
+        </div>
+        <div
+          class="c3 table__td"
+        >
+          <label
+            class="table__text-cell"
+          >
+            2009
+          </label>
+        </div>
+        <div
+          class="c3 table__td"
+        >
+          <label
+            class="table__text-cell"
+          >
+            Colombia
+          </label>
+        </div>
+        <div
+          class="c3 table__td"
+        >
+          <label
+            class="table__text-cell"
+          >
+            $1036.71
+          </label>
+        </div>
+        <div
+          class="c3 table__td"
+        >
+          <label
+            class="table__text-cell"
+          >
+            embrace proactive channels
+          </label>
+        </div>
+      </div>
+      <div
+        class="c2 table__body-row"
+        style="position:absolute;left:0;top:480px;height:48px;width:100%"
+      >
+        <div
+          class="c3 table__td"
+        >
+          <label
+            class="table__text-cell"
+          >
+            Mercury
+          </label>
+        </div>
+        <div
+          class="c3 table__td"
+        >
+          <label
+            class="table__text-cell"
+          >
+            Sable
+          </label>
+        </div>
+        <div
+          class="c3 table__td"
+        >
+          <label
+            class="table__text-cell"
+          >
+            1998
+          </label>
+        </div>
+        <div
+          class="c3 table__td"
+        >
+          <label
+            class="table__text-cell"
+          >
+            Philippines
+          </label>
+        </div>
+        <div
+          class="c3 table__td"
+        >
+          <label
+            class="table__text-cell"
+          >
+            $9516.27
+          </label>
+        </div>
+        <div
+          class="c3 table__td"
+        >
+          <label
+            class="table__text-cell"
+          >
+            architect mission-critical schemas
           </label>
         </div>
       </div>

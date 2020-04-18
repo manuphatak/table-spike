@@ -2,10 +2,17 @@ import React, { ReactElement, useCallback, useState } from "react"
 import Measure, { BoundingRect, ContentRect } from "react-measure"
 import styled from "styled-components/macro"
 
-type Dimensions = Pick<BoundingRect, "height" | "width">
+export type Dimensions = Pick<BoundingRect, "height" | "width">
 
-interface AutoSizerProps {
+export type AutoSizerProps = {
   children: (props: { dimensions: Dimensions }) => React.ReactNode
+} & typeof defaultProps
+
+const defaultProps = {
+  initialDimensions: {
+    width: -1,
+    height: -1,
+  } as Dimensions,
 }
 
 const Container = styled.div`
@@ -14,10 +21,9 @@ const Container = styled.div`
 `
 
 export default function AutoSizer(props: AutoSizerProps): ReactElement {
-  const [dimensions, setDimensions] = useState<Dimensions>({
-    width: -1,
-    height: -1,
-  })
+  const [dimensions, setDimensions] = useState<Dimensions>(
+    props.initialDimensions
+  )
 
   const handleResize = useCallback((contentRect: ContentRect) => {
     if (contentRect.bounds) {
@@ -33,3 +39,4 @@ export default function AutoSizer(props: AutoSizerProps): ReactElement {
     </Measure>
   )
 }
+AutoSizer.defaultProps = defaultProps

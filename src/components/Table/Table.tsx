@@ -2,47 +2,59 @@ import classnames from "classnames/bind"
 import React, { CSSProperties, Key, memo, ReactElement } from "react"
 import { areEqual, VariableSizeList, ListItemKeySelector } from "react-window"
 import styled from "styled-components/macro"
-import AutoSizer from "./AutoSizer"
+import AutoSizer, { Dimensions } from "./AutoSizer"
 import carData from "./carData"
 import styles from "./Table.module.scss"
+import { compose, map, toPairs, groupBy, prop, flatten } from "ramda"
 
-interface TableProps {}
+interface TableProps {
+  initialDimensions?: Dimensions
+}
 
 enum RowType {
   Header,
+  GroupHeader,
   Body,
 }
 
-type RowData = HeaderRowData | BodyRowData
+type RowData = HeaderRowData | BodyRowData | GroupRowData
 type CommonRowData = { type: RowType; height: number; key: Key }
 type HeaderRowData = CommonRowData & { type: RowType.Header }
+type GroupRowData = CommonRowData & { type: RowType.GroupHeader }
 type BodyRowData = CommonRowData & { type: RowType.Body } & ArrayInfer<
     typeof carData
   >
 type ArrayInfer<T extends any[]> = T extends Array<infer U> ? U : never
 
+type CarDatum = ArrayInfer<typeof carData>
+
 interface ColumnDefinition {
   label: string
-  dataKey: keyof ArrayInfer<typeof carData>
+  dataKey: keyof CarDatum
 }
 interface HeaderRowProps {
   index: number
   style: CSSProperties
   rowData: HeaderRowData
 }
+interface GroupHeaderRowProps {
+  index: number
+  style: CSSProperties
+  rowData: GroupRowData
+}
 interface BodyRowProps {
   index: number
   style: CSSProperties
   rowData: BodyRowData
 }
-interface RenderRowProps {
+interface RowSwitchProps {
   index: number
   style: CSSProperties
 }
 
 const cx = classnames.bind(styles)
 
-const VirtualList = styled(VariableSizeList)`
+const StyledList = styled(VariableSizeList)`
   box-sizing: border-box;
 
   *,
@@ -52,25 +64,66 @@ const VirtualList = styled(VariableSizeList)`
   }
 `
 
-const Row = styled.div`
+const StyledRow = styled.div`
   display: flex;
   flex-flow: row nowrap;
+  margin: 0;
+  padding: 0;
+  align-items: center;
 `
 
-const RowCell = styled.div`
+const StyledCell = styled.div`
   flex: 1 0 100px;
   white-space: nowrap;
   overflow: hidden;
 `
 
+const groupKeys: Array<keyof (CarDatum & CommonRowData)> = ["car_make"]
+
+interface Group {
+  groupKey: keyof (CarDatum & CommonRowData)
+  groupData: Array<(CarDatum & CommonRowData) | Group>
+}
+
+function addCommonRowData(data: CarDatum[]): Array<CarDatum & CommonRowData> {
+  return data.map((datum) => ({
+    type: RowType.Body,
+    ...datum,
+    height: 48,
+    key: datum.id,
+  }))
+}
+
+function createGroups(data: Array<CarDatum & CommonRowData>): Group[] {
+  return compose(
+    map(([groupKey, groupData]) => ({
+      groupKey: groupKey,
+      groupData: groupData,
+    })),
+    toPairs,
+    groupBy(prop("car_make"))
+  )(data)
+}
+
+function flattenGroups(groups: Group[]): RowData[] {
+  return flatten(
+    groups.map((group) => {
+      return [
+        {
+          type: RowType.GroupHeader,
+          height: 48,
+          key: group.groupKey,
+          label: group.groupKey,
+        },
+        ...group.groupData,
+      ]
+    })
+  )
+}
+
 const renderData: RowData[] = [
   { type: RowType.Header, height: 48, key: "header" },
-  ...carData.map((car) => ({
-    type: RowType.Body,
-    ...car,
-    height: 48,
-    key: car.id,
-  })),
+  ...flattenGroups(createGroups(addCommonRowData(carData))),
 ]
 
 const columnDefinitions: ColumnDefinition[] = [
@@ -84,45 +137,62 @@ const columnDefinitions: ColumnDefinition[] = [
 
 function HeaderRow(props: HeaderRowProps) {
   return (
-    <Row
+    <StyledRow
       style={props.style}
       key={props.rowData.key}
       className={cx("table__head")}
     >
-      {columnDefinitions.map((columnDefinition) => {
-        return (
-          <RowCell className={cx("table__th")} key={columnDefinition.dataKey}>
-            <label className={cx("table__th__label")}>
-              {columnDefinition.label}
-            </label>
-          </RowCell>
-        )
-      })}
-    </Row>
+      {columnDefinitions.map((columnDefinition) => (
+        <StyledCell className={cx("table__th")} key={columnDefinition.dataKey}>
+          <label className={cx("table__th__label")}>
+            {columnDefinition.label}
+          </label>
+        </StyledCell>
+      ))}
+    </StyledRow>
+  )
+}
+function GroupHeaderRow(props: GroupHeaderRowProps) {
+  return (
+    <StyledRow
+      style={props.style}
+      key={props.rowData.key}
+      className={cx("table__group-row", "table__group-row__content")}
+    >
+      <div className={cx("table__group-row__title")}>{props.rowData.label}</div>
+    </StyledRow>
   )
 }
 
 const BodyRow = function BodyRow(props: BodyRowProps) {
   return (
-    <Row style={props.style} className={cx("table__body-row")}>
-      {columnDefinitions.map((columnDefinition) => {
-        const cellData = props.rowData[columnDefinition.dataKey]
-        return (
-          <RowCell className={cx("table__td")} key={columnDefinition.dataKey}>
-            <label className={cx("table__text-cell")}>{cellData}</label>
-          </RowCell>
-        )
-      })}
-    </Row>
+    <StyledRow style={props.style} className={cx("table__body-row")}>
+      {columnDefinitions.map((columnDefinition) => (
+        <StyledCell className={cx("table__td")} key={columnDefinition.dataKey}>
+          <label className={cx("table__text-cell")}>
+            {props.rowData[columnDefinition.dataKey]}
+          </label>
+        </StyledCell>
+      ))}
+    </StyledRow>
   )
 }
 
-const RenderRow = memo(function RenderRow(props: RenderRowProps): JSX.Element {
+const RowSwitch = memo(function RowSwitch(props: RowSwitchProps): JSX.Element {
   const rowData = renderData[props.index]
+
   switch (rowData.type) {
     case RowType.Header:
       return (
         <HeaderRow index={props.index} style={props.style} rowData={rowData} />
+      )
+    case RowType.GroupHeader:
+      return (
+        <GroupHeaderRow
+          index={props.index}
+          style={props.style}
+          rowData={rowData}
+        />
       )
 
     case RowType.Body:
@@ -135,12 +205,12 @@ const RenderRow = memo(function RenderRow(props: RenderRowProps): JSX.Element {
 const getItemSize = (index: number): number => renderData[index].height
 const getItemKey: ListItemKeySelector = (index) => renderData[index].key
 
-export default function Table(_props: TableProps): ReactElement {
+export default function Table(props: TableProps): ReactElement {
   return (
-    <AutoSizer>
+    <AutoSizer initialDimensions={props.initialDimensions}>
       {({ dimensions }) => {
         return (
-          <VirtualList
+          <StyledList
             height={dimensions.height}
             itemCount={renderData.length}
             itemSize={getItemSize}
@@ -148,8 +218,8 @@ export default function Table(_props: TableProps): ReactElement {
             className={cx("table__table")}
             itemKey={getItemKey}
           >
-            {RenderRow}
-          </VirtualList>
+            {RowSwitch}
+          </StyledList>
         )
       }}
     </AutoSizer>

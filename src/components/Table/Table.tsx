@@ -1,6 +1,6 @@
 import classnames from "classnames/bind"
 import React, { CSSProperties, Key, memo, ReactElement } from "react"
-import { areEqual, VariableSizeList } from "react-window"
+import { areEqual, VariableSizeList, ListItemKeySelector } from "react-window"
 import styled from "styled-components/macro"
 import AutoSizer from "./AutoSizer"
 import carData from "./carData"
@@ -25,14 +25,29 @@ interface ColumnDefinition {
   label: string
   dataKey: keyof ArrayInfer<typeof carData>
 }
+interface HeaderRowProps {
+  index: number
+  style: CSSProperties
+  rowData: HeaderRowData
+}
+interface BodyRowProps {
+  index: number
+  style: CSSProperties
+  rowData: BodyRowData
+}
+interface RenderRowProps {
+  index: number
+  style: CSSProperties
+}
 
 const cx = classnames.bind(styles)
 
 const VirtualList = styled(VariableSizeList)`
   box-sizing: border-box;
+
   *,
-  :after,
-  :before {
+  *:before,
+  *:after {
     box-sizing: inherit;
   }
 `
@@ -67,12 +82,6 @@ const columnDefinitions: ColumnDefinition[] = [
   { dataKey: "comments", label: "Comments" },
 ]
 
-interface HeaderRowProps {
-  index: number
-  style: CSSProperties
-  rowData: HeaderRowData
-}
-
 function HeaderRow(props: HeaderRowProps) {
   return (
     <Row
@@ -93,11 +102,6 @@ function HeaderRow(props: HeaderRowProps) {
   )
 }
 
-interface BodyRowProps {
-  index: number
-  style: CSSProperties
-  rowData: BodyRowData
-}
 const BodyRow = function BodyRow(props: BodyRowProps) {
   return (
     <Row style={props.style} className={cx("table__body-row")}>
@@ -111,11 +115,6 @@ const BodyRow = function BodyRow(props: BodyRowProps) {
       })}
     </Row>
   )
-}
-
-interface RenderRowProps {
-  index: number
-  style: CSSProperties
 }
 
 const RenderRow = memo(function RenderRow(props: RenderRowProps): JSX.Element {
@@ -134,6 +133,7 @@ const RenderRow = memo(function RenderRow(props: RenderRowProps): JSX.Element {
 }, areEqual)
 
 const getItemSize = (index: number): number => renderData[index].height
+const getItemKey: ListItemKeySelector = (index) => renderData[index].key
 
 export default function Table(_props: TableProps): ReactElement {
   return (
@@ -146,7 +146,7 @@ export default function Table(_props: TableProps): ReactElement {
             itemSize={getItemSize}
             width={dimensions.width}
             className={cx("table__table")}
-            itemKey={(index) => renderData[index].key}
+            itemKey={getItemKey}
           >
             {RenderRow}
           </VirtualList>

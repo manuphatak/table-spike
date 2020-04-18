@@ -11,8 +11,8 @@ exports[`render matches snapshot 1`] = `
 }
 
 .c1 *,
-.c1:after,
-.c1:before {
+.c1 *:before,
+.c1 *:after {
   box-sizing: inherit;
 }
 

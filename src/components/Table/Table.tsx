@@ -72,7 +72,6 @@ const StyledRow = styled.div`
 `
 
 const StyledCell = styled.div<{ flex: CSSProperties["flex"] }>`
-  /* flex: 1 0 100px; */
   flex: ${(props) => props.flex};
   white-space: nowrap;
   overflow: hidden;

@@ -17,39 +17,38 @@ enum RowType {
   Body,
 }
 
-type RowData = HeaderRowData | BodyRowData | GroupRowData
+type RowData<T = CarDatum> = HeaderRowData | BodyRowData<T> | GroupRowData
 type CommonRowData = { type: RowType; height: number; key: Key }
 type HeaderRowData = CommonRowData & { type: RowType.Header }
-type GroupRowData = CommonRowData & { type: RowType.GroupHeader }
-type BodyRowData = CommonRowData & { type: RowType.Body } & ArrayInfer<
-    typeof carData
-  >
+type GroupRowData = CommonRowData & { type: RowType.GroupHeader; label: string }
+type BodyRowData<T> = CommonRowData & {
+  type: RowType.Body
+} & T
+
 type ArrayInfer<T extends any[]> = T extends Array<infer U> ? U : never
 
 type CarDatum = ArrayInfer<typeof carData>
 
-interface ColumnDefinition {
+interface Group<T = CarDatum> {
+  groupKey: keyof (T & CommonRowData)
+  groupData: Array<(T & CommonRowData) | Group<T>>
+}
+
+interface ColumnDefinition<T = CarDatum> {
   label: string
-  dataKey: keyof CarDatum
+  dataKey: keyof T
+  flex: CSSProperties["flex"]
 }
-interface HeaderRowProps {
-  index: number
-  style: CSSProperties
-  rowData: HeaderRowData
-}
-interface GroupHeaderRowProps {
-  index: number
-  style: CSSProperties
-  rowData: GroupRowData
-}
-interface BodyRowProps {
-  index: number
-  style: CSSProperties
-  rowData: BodyRowData
-}
+
 interface RowSwitchProps {
   index: number
   style: CSSProperties
+}
+
+interface RowProps<T extends RowData> {
+  index: number
+  style: CSSProperties
+  rowData: T
 }
 
 const cx = classnames.bind(styles)
@@ -72,20 +71,18 @@ const StyledRow = styled.div`
   align-items: center;
 `
 
-const StyledCell = styled.div`
-  flex: 1 0 100px;
+const StyledCell = styled.div<{ flex: CSSProperties["flex"] }>`
+  /* flex: 1 0 100px; */
+  flex: ${(props) => props.flex};
   white-space: nowrap;
   overflow: hidden;
 `
 
 const groupKeys: Array<keyof (CarDatum & CommonRowData)> = ["car_make"]
 
-interface Group {
-  groupKey: keyof (CarDatum & CommonRowData)
-  groupData: Array<(CarDatum & CommonRowData) | Group>
-}
-
-function addCommonRowData(data: CarDatum[]): Array<CarDatum & CommonRowData> {
+function addCommonRowData<T extends CarDatum = CarDatum>(
+  data: T[]
+): Array<T & CommonRowData> {
   return data.map((datum) => ({
     type: RowType.Body,
     ...datum,
@@ -94,7 +91,9 @@ function addCommonRowData(data: CarDatum[]): Array<CarDatum & CommonRowData> {
   }))
 }
 
-function createGroups(data: Array<CarDatum & CommonRowData>): Group[] {
+function createGroups<T extends CarDatum = CarDatum>(
+  data: Array<T & CommonRowData>
+): Group[] {
   return compose(
     map(([groupKey, groupData]) => ({
       groupKey: groupKey,
@@ -105,7 +104,9 @@ function createGroups(data: Array<CarDatum & CommonRowData>): Group[] {
   )(data)
 }
 
-function flattenGroups(groups: Group[]): RowData[] {
+function flattenGroups<T extends CarDatum = CarDatum>(
+  groups: Group<T>[]
+): RowData<T>[] {
   return flatten(
     groups.map((group) => {
       return [
@@ -121,21 +122,21 @@ function flattenGroups(groups: Group[]): RowData[] {
   )
 }
 
-const renderData: RowData[] = [
+const renderData: RowData<CarDatum>[] = [
   { type: RowType.Header, height: 48, key: "header" },
   ...flattenGroups(createGroups(addCommonRowData(carData))),
 ]
 
 const columnDefinitions: ColumnDefinition[] = [
-  { dataKey: "car_make", label: "Car Make" },
-  { dataKey: "car_model", label: "Car Model" },
-  { dataKey: "car_year", label: "Car Year" },
-  { dataKey: "country", label: "Country" },
-  { dataKey: "car_price", label: "Price" },
-  { dataKey: "comments", label: "Comments" },
+  { dataKey: "car_make", label: "Car Make", flex: "1 0 100px" },
+  { dataKey: "car_model", label: "Car Model", flex: "1 0 100px" },
+  { dataKey: "car_year", label: "Car Year", flex: "0.5 0 50px" },
+  { dataKey: "country", label: "Country", flex: "1 0 100px" },
+  { dataKey: "car_price", label: "Price", flex: "1 0 100px" },
+  { dataKey: "comments", label: "Comments", flex: "2 0 200px" },
 ]
 
-function HeaderRow(props: HeaderRowProps) {
+function HeaderRow(props: RowProps<HeaderRowData>) {
   return (
     <StyledRow
       style={props.style}
@@ -143,7 +144,11 @@ function HeaderRow(props: HeaderRowProps) {
       className={cx("table__head")}
     >
       {columnDefinitions.map((columnDefinition) => (
-        <StyledCell className={cx("table__th")} key={columnDefinition.dataKey}>
+        <StyledCell
+          className={cx("table__th")}
+          key={columnDefinition.dataKey}
+          flex={columnDefinition.flex}
+        >
           <label className={cx("table__th__label")}>
             {columnDefinition.label}
           </label>
@@ -152,7 +157,7 @@ function HeaderRow(props: HeaderRowProps) {
     </StyledRow>
   )
 }
-function GroupHeaderRow(props: GroupHeaderRowProps) {
+function GroupHeaderRow(props: RowProps<GroupRowData>) {
   return (
     <StyledRow
       style={props.style}
@@ -164,11 +169,17 @@ function GroupHeaderRow(props: GroupHeaderRowProps) {
   )
 }
 
-const BodyRow = function BodyRow(props: BodyRowProps) {
+const BodyRow = function BodyRow<T extends CarDatum = CarDatum>(
+  props: RowProps<BodyRowData<T>>
+) {
   return (
     <StyledRow style={props.style} className={cx("table__body-row")}>
       {columnDefinitions.map((columnDefinition) => (
-        <StyledCell className={cx("table__td")} key={columnDefinition.dataKey}>
+        <StyledCell
+          className={cx("table__td")}
+          key={columnDefinition.dataKey}
+          flex={columnDefinition.flex}
+        >
           <label className={cx("table__text-cell")}>
             {props.rowData[columnDefinition.dataKey]}
           </label>

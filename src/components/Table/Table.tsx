@@ -7,6 +7,11 @@ import React, {
 import Measure, { BoundingRect, ContentRect } from "react-measure"
 import { VariableSizeList } from "react-window"
 import styled from "styled-components"
+import carData from "./carData"
+import styles from "./Table.module.scss"
+import classnames from "classnames/bind"
+
+const cx = classnames.bind(styles)
 
 interface TableProps {}
 type Dimensions = Pick<BoundingRect, "height" | "width">
@@ -16,34 +21,65 @@ const Container = styled.div`
   height: 100%;
 `
 
-const List = styled(VariableSizeList)`
-  border: 1px solid #d9dddd;
-  font-family: sans-serif;
-  font-size: 12px;
+const VirtualList = styled(VariableSizeList)`
   box-sizing: border-box;
 `
 
-const ListItem = styled.div<{ even: boolean }>`
+const Row = styled.div`
   display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: ${(props) => (props.even ? "inherit" : "#f8f8f0")};
+  flex-flow: row nowrap;
 `
 
-const rowHeights = new Array(1000)
-  .fill(true)
-  .map(() => 25 + Math.round(Math.random() * 50))
+const RowColumn = styled.div`
+  flex: 1 0 100px;
+  white-space: nowrap;
+  overflow: hidden;
+`
+
+const renderableCarData = carData.map((car) => ({
+  ...car,
+  height: 48,
+}))
+
+// const colDefs = [
+//   { dataKey: "car_make", label: "Car Make" },
+//   { dataKey: "car_model", label: "Car Model" },
+//   { dataKey: "car_year", label: "Car Year" },
+//   { dataKey: "country", label: "Country" },
+//   { dataKey: "car_price", label: "Price", cellRenderer: CurrencyCell },
+//   { dataKey: "comments", label: "Comments" },
+// ]
 
 const renderRow = (props: {
   index: number
   style: CSSProperties
-}): JSX.Element => (
-  <ListItem even={props.index % 2 === 0} style={props.style}>
-    Row {props.index}
-  </ListItem>
-)
+}): JSX.Element => {
+  const rowData = renderableCarData[props.index]
+  return (
+    <Row style={props.style} className={cx("table__body-row")}>
+      <RowColumn className={cx("table__td")}>
+        <label className={cx("table__text-cell")}>{rowData.car_make}</label>
+      </RowColumn>
+      <RowColumn className={cx("table__td")}>
+        <label className={cx("table__text-cell")}>{rowData.car_model}</label>
+      </RowColumn>
+      <RowColumn className={cx("table__td")}>
+        <label className={cx("table__text-cell")}>{rowData.car_year}</label>
+      </RowColumn>
+      <RowColumn className={cx("table__td")}>
+        <label className={cx("table__text-cell")}>{rowData.country}</label>
+      </RowColumn>
+      <RowColumn className={cx("table__td")}>
+        <label className={cx("table__text-cell")}>{rowData.car_price}</label>
+      </RowColumn>
+      <RowColumn className={cx("table__td")}>
+        <label className={cx("table__text-cell")}>{rowData.comments}</label>
+      </RowColumn>
+    </Row>
+  )
+}
 
-const getItemSize = (index: number): number => rowHeights[index]
+const getItemSize = (index: number): number => renderableCarData[index].height
 
 export default function Table(_props: TableProps): ReactElement {
   const [dimensions, setDimensions] = useState<Dimensions>({
@@ -61,14 +97,14 @@ export default function Table(_props: TableProps): ReactElement {
     <Measure bounds onResize={handleResize}>
       {({ measureRef }) => (
         <Container ref={measureRef}>
-          <List
+          <VirtualList
             height={dimensions.height}
-            itemCount={1000}
+            itemCount={carData.length}
             itemSize={getItemSize}
             width={dimensions.width}
           >
             {renderRow}
-          </List>
+          </VirtualList>
         </Container>
       )}
     </Measure>

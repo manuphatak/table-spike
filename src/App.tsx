@@ -1,6 +1,6 @@
 import React from "react"
 import logo from "./logo.svg"
-import styled, { keyframes } from "styled-components"
+import styled, { keyframes } from "styled-components/macro"
 
 const spin = keyframes`
   from {

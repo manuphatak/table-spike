@@ -1,16 +1,10 @@
-import React, {
-  CSSProperties,
-  ReactElement,
-  useCallback,
-  useState,
-} from "react"
-import Measure, { BoundingRect, ContentRect } from "react-measure"
+import classnames from "classnames/bind"
+import React, { CSSProperties, ReactElement } from "react"
 import { VariableSizeList } from "react-window"
-import styled from "styled-components"
+import styled from "styled-components/macro"
+import AutoSizer from "./AutoSizer"
 import carData from "./carData"
 import styles from "./Table.module.scss"
-import classnames from "classnames/bind"
-import AutoSizer from "./AutoSizer"
 
 const cx = classnames.bind(styles)
 
@@ -36,12 +30,12 @@ const renderableCarData = carData.map((car) => ({
   height: 48,
 }))
 
-// const colDefs = [
+// const columnDefinitions = [
 //   { dataKey: "car_make", label: "Car Make" },
 //   { dataKey: "car_model", label: "Car Model" },
 //   { dataKey: "car_year", label: "Car Year" },
 //   { dataKey: "country", label: "Country" },
-//   { dataKey: "car_price", label: "Price", cellRenderer: CurrencyCell },
+//   { dataKey: "car_price", label: "Price" },
 //   { dataKey: "comments", label: "Comments" },
 // ]
 

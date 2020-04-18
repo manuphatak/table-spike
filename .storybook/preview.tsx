@@ -1,7 +1,7 @@
 import { addDecorator } from "@storybook/react"
 
 import React, { ReactElement, ReactNode } from "react"
-import { createGlobalStyle } from "styled-components"
+import { createGlobalStyle } from "styled-components/macro"
 
 const GloblaStyles = createGlobalStyle`
   html,

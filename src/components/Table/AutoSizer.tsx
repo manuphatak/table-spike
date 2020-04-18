@@ -1,6 +1,6 @@
 import React, { ReactElement, useCallback, useState } from "react"
 import Measure, { BoundingRect, ContentRect } from "react-measure"
-import styled from "styled-components"
+import styled from "styled-components/macro"
 
 type Dimensions = Pick<BoundingRect, "height" | "width">
 

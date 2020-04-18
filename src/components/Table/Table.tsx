@@ -1,6 +1,6 @@
 import classnames from "classnames/bind"
-import React, { CSSProperties, ReactElement, Key } from "react"
-import { VariableSizeList } from "react-window"
+import React, { CSSProperties, Key, memo, ReactElement } from "react"
+import { areEqual, VariableSizeList } from "react-window"
 import styled from "styled-components/macro"
 import AutoSizer from "./AutoSizer"
 import carData from "./carData"
@@ -27,7 +27,6 @@ interface ColumnDefinition {
 }
 
 const cx = classnames.bind(styles)
-console.log("styles", styles)
 
 const VirtualList = styled(VariableSizeList)`
   box-sizing: border-box;
@@ -68,11 +67,13 @@ const columnDefinitions: ColumnDefinition[] = [
   { dataKey: "comments", label: "Comments" },
 ]
 
-const renderHeaderRow = (props: {
+interface HeaderRowProps {
   index: number
   style: CSSProperties
   rowData: HeaderRowData
-}) => {
+}
+
+function HeaderRow(props: HeaderRowProps) {
   return (
     <Row
       style={props.style}
@@ -92,11 +93,12 @@ const renderHeaderRow = (props: {
   )
 }
 
-const renderBodyRow = (props: {
+interface BodyRowProps {
   index: number
   style: CSSProperties
   rowData: BodyRowData
-}) => {
+}
+const BodyRow = function BodyRow(props: BodyRowProps) {
   return (
     <Row style={props.style} className={cx("table__body-row")}>
       {columnDefinitions.map((columnDefinition) => {
@@ -111,22 +113,25 @@ const renderBodyRow = (props: {
   )
 }
 
-const renderRow = (props: {
+interface RenderRowProps {
   index: number
   style: CSSProperties
-}): JSX.Element => {
+}
+
+const RenderRow = memo(function RenderRow(props: RenderRowProps): JSX.Element {
   const rowData = renderData[props.index]
   switch (rowData.type) {
     case RowType.Header:
-      return renderHeaderRow({
-        index: props.index,
-        style: props.style,
-        rowData,
-      })
+      return (
+        <HeaderRow index={props.index} style={props.style} rowData={rowData} />
+      )
+
     case RowType.Body:
-      return renderBodyRow({ index: props.index, style: props.style, rowData })
+      return (
+        <BodyRow index={props.index} style={props.style} rowData={rowData} />
+      )
   }
-}
+}, areEqual)
 
 const getItemSize = (index: number): number => renderData[index].height
 
@@ -141,8 +146,9 @@ export default function Table(_props: TableProps): ReactElement {
             itemSize={getItemSize}
             width={dimensions.width}
             className={cx("table__table")}
+            itemKey={(index) => renderData[index].key}
           >
-            {renderRow}
+            {RenderRow}
           </VirtualList>
         )
       }}

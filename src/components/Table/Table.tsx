@@ -18,35 +18,30 @@ export enum RowType {
 }
 
 type CommonRowData = { type: RowType; height: number; key: Key }
-type RowData<T extends CarDatum = CarDatum> =
-  | HeaderRowData
-  | BodyRowData<T>
-  | GroupRowData
-type HeaderRowData = CommonRowData & { type: RowType.Header }
-type GroupRowData = CommonRowData & {
+type RowDatum<T extends CarDatum = CarDatum> =
+  | HeaderRowDatum
+  | BodyRowDatum<T>
+  | GroupRowDatum
+type HeaderRowDatum = CommonRowData & { type: RowType.Header }
+type GroupRowDatum = CommonRowData & {
   type: RowType.GroupHeader
   label: string
   depth: number
 }
-type BodyRowData<T extends CarDatum> = CommonRowData &
+type BodyRowDatum<T extends CarDatum> = CommonRowData &
   T & {
     type: RowType.Body
   }
 
 type ArrayInfer<T extends any[]> = T extends Array<infer U> ? U : never
-
 type CarDatum = ArrayInfer<typeof carData>
-
-const GROUP_TYPE = Symbol("GROUP_TYPE")
-type Group<T extends CarDatum & CommonRowData> = {
-  groupParents: string[]
-  groupValue: Key
-  groupData: Array<EitherGroup<T>>
+type Group<T extends CarDatum> = {
+  path: string[]
+  value: Key
+  children: BodyRowOrGroup<T>[]
 }
 
-type EitherGroup<
-  T extends CarDatum & CommonRowData = CarDatum & CommonRowData
-> = RowData<T> | Group<T>
+type BodyRowOrGroup<T extends CarDatum = CarDatum> = BodyRowDatum<T> | Group<T>
 
 interface ColumnDefinition<T = CarDatum> {
   label: string
@@ -59,7 +54,7 @@ interface RowSwitchProps {
   style: CSSProperties
 }
 
-interface RowProps<T extends RowData> {
+interface RowProps<T extends RowDatum> {
   index: number
   style: CSSProperties
   rowData: T
@@ -93,7 +88,7 @@ const StyledCell = styled.div<{ flex: CSSProperties["flex"] }>`
 
 export function addCommonRowData<T extends CarDatum = CarDatum>(
   data: T[]
-): Array<T & CommonRowData> {
+): BodyRowDatum<T>[] {
   return data.map((datum) => ({
     type: RowType.Body,
     ...datum,
@@ -104,79 +99,58 @@ export function addCommonRowData<T extends CarDatum = CarDatum>(
 
 export function createGroups<
   T extends CarDatum = CarDatum,
-  U extends T & CommonRowData = T & CommonRowData
+  U extends BodyRowDatum<T> = BodyRowDatum<T>
 >(
   [groupFn, ...groupFns]: ((data: U) => string)[],
   data: U[],
   parents: string[] = []
-): EitherGroup<U>[] {
+): BodyRowOrGroup<U>[] {
   if (groupFn === undefined) {
     return data
   }
   return pipe(
     groupBy<U>(groupFn),
     toPairs,
-    map(([groupValue, groupData]) => {
-      const groupParents = [...parents, groupValue]
-      return createGroup<U>({
-        groupValue,
-        groupData: createGroups(groupFns, groupData, groupParents),
-        groupParents,
-      })
+    map(([value, children]) => {
+      const path = [...parents, value]
+      return {
+        value,
+        children: createGroups(groupFns, children, path),
+        path,
+      }
     })
   )(data)
 }
 
-function createGroup<
-  U extends CarDatum & CommonRowData = CarDatum & CommonRowData
->({ groupValue, groupData, groupParents }: Group<U>): Group<U> {
-  return Object.defineProperty(
-    {
-      groupValue: groupValue,
-      groupData: groupData,
-      groupParents: groupParents,
-    },
-    GROUP_TYPE,
-    {}
+function isBodyRow<T extends CarDatum>(
+  data: BodyRowOrGroup<T>
+): data is BodyRowDatum<T> {
+  return data.hasOwnProperty("type")
+}
+
+export function flattenGroups<T extends CarDatum = CarDatum>(
+  groupOrRows: BodyRowOrGroup<T>[]
+): (BodyRowDatum<T> | GroupRowDatum)[] {
+  return unnest(
+    groupOrRows.map((groupOrRow) => {
+      if (isBodyRow<T>(groupOrRow)) {
+        return [groupOrRow]
+      }
+
+      const groupHeader: GroupRowDatum = {
+        type: RowType.GroupHeader,
+        height: 48,
+        depth: groupOrRow.path.length,
+        key: JSON.stringify(groupOrRow.path),
+        label: groupOrRow.value.toString(),
+      }
+
+      return [groupHeader, ...flattenGroups<T>(groupOrRow.children)]
+    })
   )
 }
 
-function isGroup<T extends CarDatum & CommonRowData>(
-  eitherGroup: EitherGroup<T>
-): eitherGroup is Group<T> {
-  return eitherGroup.hasOwnProperty(GROUP_TYPE)
-}
-
-function unravel<T extends CarDatum & CommonRowData = CarDatum & CommonRowData>(
-  groupOrRow: EitherGroup<T>
-): RowData<T> | RowData<T>[] {
-  if (isGroup(groupOrRow)) {
-    const groupHeader: GroupRowData = {
-      type: RowType.GroupHeader,
-      height: 48,
-      depth: groupOrRow.groupParents.length,
-      key: groupOrRow.groupParents.join("::"),
-      label: groupOrRow.groupValue.toString(),
-    }
-    const groupChildren: RowData<T>[] = flattenGroups<T>(groupOrRow.groupData)
-    const groupRows: RowData<T>[] = [groupHeader, ...groupChildren]
-    return groupRows
-  }
-  const row: RowData<T> = groupOrRow
-  return row
-}
-
-export function flattenGroups<
-  T extends CarDatum & CommonRowData = CarDatum & CommonRowData
->(groupOrRows: EitherGroup<T>[]): RowData<T>[] {
-  const rows: RowData<T>[] | RowData<T>[][] = groupOrRows.map(unravel)
-
-  const result: RowData<T>[] = unnest(rows)
-
-  return result
-}
-
-const renderData: RowData<CarDatum>[] = [
+const renderData: RowDatum<CarDatum>[] = [
   { type: RowType.Header, height: 48, key: "header" },
   ...flattenGroups(createGroups([prop("car_make")], addCommonRowData(carData))),
 ]
@@ -190,7 +164,7 @@ const columnDefinitions: ColumnDefinition[] = [
   { dataKey: "comments", label: "Comments", flex: "2 0 200px" },
 ]
 
-function HeaderRow(props: RowProps<HeaderRowData>) {
+function HeaderRow(props: RowProps<HeaderRowDatum>) {
   return (
     <StyledRow
       style={props.style}
@@ -211,7 +185,7 @@ function HeaderRow(props: RowProps<HeaderRowData>) {
     </StyledRow>
   )
 }
-function GroupHeaderRow(props: RowProps<GroupRowData>) {
+function GroupHeaderRow(props: RowProps<GroupRowDatum>) {
   return (
     <StyledRow
       style={props.style}
@@ -224,7 +198,7 @@ function GroupHeaderRow(props: RowProps<GroupRowData>) {
 }
 
 const BodyRow = function BodyRow<T extends CarDatum = CarDatum>(
-  props: RowProps<BodyRowData<T>>
+  props: RowProps<BodyRowDatum<T>>
 ) {
   return (
     <StyledRow style={props.style} className={cx("table__body-row")}>

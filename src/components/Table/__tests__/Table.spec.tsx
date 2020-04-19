@@ -82,9 +82,9 @@ describe("createGroups", () => {
     it("groups data", () => {
       expect(createGroups([prop("car_make")], data)).toEqual([
         {
-          groupValue: "Chevrolet",
-          groupParents: ["Chevrolet"],
-          groupData: addCommonRowData([
+          value: "Chevrolet",
+          path: ["Chevrolet"],
+          children: addCommonRowData([
             {
               id: 3,
               country: "Kazakhstan",
@@ -97,9 +97,9 @@ describe("createGroups", () => {
           ]),
         },
         {
-          groupValue: "Cadillac",
-          groupParents: ["Cadillac"],
-          groupData: addCommonRowData([
+          value: "Cadillac",
+          path: ["Cadillac"],
+          children: addCommonRowData([
             {
               id: 11,
               country: "Brazil",
@@ -130,9 +130,9 @@ describe("createGroups", () => {
           ]),
         },
         {
-          groupValue: "Ford",
-          groupParents: ["Ford"],
-          groupData: addCommonRowData([
+          value: "Ford",
+          path: ["Ford"],
+          children: addCommonRowData([
             {
               id: 12,
               country: "Philippines",
@@ -151,13 +151,13 @@ describe("createGroups", () => {
       expect(createGroups([prop("car_make"), prop("car_model")], data)).toEqual(
         [
           {
-            groupValue: "Chevrolet",
-            groupParents: ["Chevrolet"],
-            groupData: [
+            value: "Chevrolet",
+            path: ["Chevrolet"],
+            children: [
               {
-                groupValue: "Camaro",
-                groupParents: ["Chevrolet", "Camaro"],
-                groupData: addCommonRowData([
+                value: "Camaro",
+                path: ["Chevrolet", "Camaro"],
+                children: addCommonRowData([
                   {
                     id: 3,
                     country: "Kazakhstan",
@@ -172,13 +172,13 @@ describe("createGroups", () => {
             ],
           },
           {
-            groupValue: "Cadillac",
-            groupParents: ["Cadillac"],
-            groupData: [
+            value: "Cadillac",
+            path: ["Cadillac"],
+            children: [
               {
-                groupValue: "Escalade EXT",
-                groupParents: ["Cadillac", "Escalade EXT"],
-                groupData: addCommonRowData([
+                value: "Escalade EXT",
+                path: ["Cadillac", "Escalade EXT"],
+                children: addCommonRowData([
                   {
                     id: 11,
                     country: "Brazil",
@@ -200,9 +200,9 @@ describe("createGroups", () => {
                 ]),
               },
               {
-                groupValue: "SRX",
-                groupParents: ["Cadillac", "SRX"],
-                groupData: addCommonRowData([
+                value: "SRX",
+                path: ["Cadillac", "SRX"],
+                children: addCommonRowData([
                   {
                     id: 25,
                     country: "Czech Republic",
@@ -217,13 +217,13 @@ describe("createGroups", () => {
             ],
           },
           {
-            groupValue: "Ford",
-            groupParents: ["Ford"],
-            groupData: [
+            value: "Ford",
+            path: ["Ford"],
+            children: [
               {
-                groupValue: "Model T",
-                groupParents: ["Ford", "Model T"],
-                groupData: addCommonRowData([
+                value: "Model T",
+                path: ["Ford", "Model T"],
+                children: addCommonRowData([
                   {
                     id: 12,
                     country: "Philippines",
@@ -304,7 +304,7 @@ describe("flattenGroups", () => {
         {
           type: RowType.GroupHeader,
           height: 48,
-          key: "Chevrolet",
+          key: JSON.stringify(["Chevrolet"]),
           label: "Chevrolet",
           depth: 1,
         },
@@ -323,7 +323,7 @@ describe("flattenGroups", () => {
         {
           type: RowType.GroupHeader,
           height: 48,
-          key: "Cadillac",
+          key: JSON.stringify(["Cadillac"]),
           label: "Cadillac",
           depth: 1,
         },
@@ -366,7 +366,7 @@ describe("flattenGroups", () => {
         {
           type: RowType.GroupHeader,
           height: 48,
-          key: "Ford",
+          key: JSON.stringify(["Ford"]),
           label: "Ford",
           depth: 1,
         },
@@ -387,27 +387,20 @@ describe("flattenGroups", () => {
   })
   describe("given multiple grouping fns", () => {
     it("flattens the group into rows", () => {
-      // const temp = flattenGroups(
-      //   createGroups(
-      //     [prop("car_make"), prop("car_model"), prop("car_year")],
-      //     data
-      //   )
-      // )
-      // console.log("temp", temp)
       expect(
         flattenGroups(createGroups([prop("car_make"), prop("car_model")], data))
       ).toEqual([
         {
           type: RowType.GroupHeader,
           height: 48,
-          key: "Chevrolet",
+          key: JSON.stringify(["Chevrolet"]),
           label: "Chevrolet",
           depth: 1,
         },
         {
           type: RowType.GroupHeader,
           height: 48,
-          key: "Chevrolet::Camaro",
+          key: JSON.stringify(["Chevrolet", "Camaro"]),
           label: "Camaro",
           depth: 2,
         },
@@ -426,14 +419,14 @@ describe("flattenGroups", () => {
         {
           type: RowType.GroupHeader,
           height: 48,
-          key: "Cadillac",
+          key: JSON.stringify(["Cadillac"]),
           label: "Cadillac",
           depth: 1,
         },
         {
           type: RowType.GroupHeader,
           height: 48,
-          key: "Cadillac::Escalade EXT",
+          key: JSON.stringify(["Cadillac", "Escalade EXT"]),
           label: "Escalade EXT",
           depth: 2,
         },
@@ -464,7 +457,7 @@ describe("flattenGroups", () => {
         {
           type: RowType.GroupHeader,
           height: 48,
-          key: "Cadillac::SRX",
+          key: JSON.stringify(["Cadillac", "SRX"]),
           label: "SRX",
           depth: 2,
         },
@@ -483,14 +476,14 @@ describe("flattenGroups", () => {
         {
           type: RowType.GroupHeader,
           height: 48,
-          key: "Ford",
+          key: JSON.stringify(["Ford"]),
           label: "Ford",
           depth: 1,
         },
         {
           type: RowType.GroupHeader,
           height: 48,
-          key: "Ford::Model T",
+          key: JSON.stringify(["Ford", "Model T"]),
           label: "Model T",
           depth: 2,
         },

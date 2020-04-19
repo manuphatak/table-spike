@@ -1,16 +1,27 @@
 import classnames from "classnames/bind"
-import { groupBy, map, pipe, prop, toPairs, unnest } from "ramda"
-import React, { CSSProperties, Key, memo, ReactElement } from "react"
+import { groupBy, map, pipe, prop, toPairs, unnest, compose } from "ramda"
+import React, {
+  CSSProperties,
+  Key,
+  memo,
+  ReactElement,
+  createContext,
+  useContext,
+} from "react"
 import { areEqual, ListItemKeySelector, VariableSizeList } from "react-window"
 import styled from "styled-components/macro"
 import AutoSizer, { Dimensions } from "./AutoSizer"
-import CAR_DATA from "../../fixtures/CAR_DATA"
 import styles from "./Table.module.scss"
+import CAR_DATA from "../../fixtures/CAR_DATA"
 
 const cx = classnames.bind(styles)
 
-interface TableProps {
+interface TableProps<T extends CarDatum> {
   initialDimensions?: Dimensions
+  data: T[]
+  columnDefinitions: ColumnDefinition<T>[]
+  rowDefinitions: RowDefinitions<T>
+  groupDefinitions: GroupDefinition<T>[]
 }
 
 export enum RowType {
@@ -20,7 +31,7 @@ export enum RowType {
 }
 
 type CommonRowData = { type: RowType; height: number; key: Key }
-type RowDatum<T extends CarDatum = CarDatum> =
+type RowDatum<T extends CarDatum> =
   | HeaderRowDatum
   | BodyRowDatum<T>
   | GroupRowDatum
@@ -38,17 +49,24 @@ type BodyRowDatum<T extends CarDatum> = CommonRowData &
 type ArrayInfer<T extends any[]> = T extends Array<infer U> ? U : never
 type CarDatum = ArrayInfer<typeof CAR_DATA>
 type Group<T extends CarDatum> = {
-  path: string[]
+  path: Key[]
   value: Key
   children: BodyRowOrGroup<T>[]
 }
 
-type BodyRowOrGroup<T extends CarDatum = CarDatum> = BodyRowDatum<T> | Group<T>
+type BodyRowOrGroup<T extends CarDatum> = BodyRowDatum<T> | Group<T>
 
-interface ColumnDefinition<T = CarDatum> {
+export interface ColumnDefinition<T extends CarDatum> {
   label: string
   dataKey: keyof T
   flex: CSSProperties["flex"]
+}
+
+export interface GroupDefinition<
+  T extends CarDatum,
+  U extends BodyRowDatum<T> = BodyRowDatum<T>
+> {
+  (data: U): Key
 }
 
 interface RowSwitchProps {
@@ -56,21 +74,31 @@ interface RowSwitchProps {
   style: CSSProperties
 }
 
-interface RowProps<T extends RowDatum> {
+interface RowProps<T extends CarDatum, U extends RowDatum<T>> {
   index: number
   style: CSSProperties
-  rowData: T
+  rowData: U
 }
 
-const StyledList = styled(VariableSizeList)`
-  box-sizing: border-box;
-
-  *,
-  *:before,
-  *:after {
-    box-sizing: inherit;
+export interface RowDefinitions<T> {
+  [RowType.Body]: {
+    height: number
+    keyFn: (datum: T) => Key
   }
-`
+}
+
+const StyledList = memo(
+  styled(VariableSizeList)`
+    box-sizing: border-box;
+
+    *,
+    *:before,
+    *:after {
+      box-sizing: inherit;
+    }
+  `,
+  areEqual
+)
 
 const StyledRow = styled.div`
   display: flex;
@@ -93,30 +121,35 @@ const StyleCaratCell = styled(StyledCell)`
   font-size: 11px;
 `
 
-export function addCommonRowData<T extends CarDatum = CarDatum>(
+export function addCommonRowData<T extends CarDatum>(
+  rowDefinitions: RowDefinitions<T>,
   data: T[]
 ): BodyRowDatum<T>[] {
   return data.map((datum) => ({
     type: RowType.Body,
     ...datum,
-    height: 48,
-    key: datum.id,
+    height: rowDefinitions[RowType.Body].height,
+    key: rowDefinitions[RowType.Body].keyFn(datum),
   }))
 }
 
+function asString<U>(fn: (a: U) => Key): (a: U) => string {
+  return (data) => fn(data).toString()
+}
+
 export function createGroups<
-  T extends CarDatum = CarDatum,
+  T extends CarDatum,
   U extends BodyRowDatum<T> = BodyRowDatum<T>
 >(
-  [groupFn, ...groupFns]: ((data: U) => string)[],
+  [groupFn, ...groupFns]: GroupDefinition<T>[],
   data: U[],
-  parents: string[] = []
+  parents: Key[] = []
 ): BodyRowOrGroup<U>[] {
   if (groupFn === undefined) {
     return data
   }
   return pipe(
-    groupBy<U>(groupFn),
+    groupBy<U>(asString(groupFn)),
     toPairs,
     map(([value, children]) => {
       const path = [...parents, value]
@@ -135,7 +168,7 @@ function isBodyRow<T extends CarDatum>(
   return data.hasOwnProperty("type")
 }
 
-export function flattenGroups<T extends CarDatum = CarDatum>(
+export function flattenGroups<T extends CarDatum>(
   groupOrRows: BodyRowOrGroup<T>[]
 ): (BodyRowDatum<T> | GroupRowDatum)[] {
   return unnest(
@@ -156,24 +189,77 @@ export function flattenGroups<T extends CarDatum = CarDatum>(
     })
   )
 }
+function generateTableData<T extends CarDatum>(
+  rowDefinitions: RowDefinitions<T>,
+  groupDefinitions: GroupDefinition<T>[],
+  data: T[]
+): RowDatum<T>[] {
+  return [
+    { type: RowType.Header, height: 48, key: "header" },
+    ...flattenGroups(
+      createGroups(groupDefinitions, addCommonRowData(rowDefinitions, data))
+    ),
+  ]
+}
 
-const renderData: RowDatum<CarDatum>[] = [
-  { type: RowType.Header, height: 48, key: "header" },
-  ...flattenGroups(
-    createGroups([prop("car_make")], addCommonRowData(CAR_DATA))
-  ),
-]
+function GroupHeaderRow<T extends CarDatum>(props: RowProps<T, GroupRowDatum>) {
+  return (
+    <StyledRow
+      style={props.style}
+      key={props.rowData.key}
+      className={cx("table__group-row", "table__group-row__content")}
+    >
+      <StyleCaratCell key={"chevron"} flex={"0 0 48px"}>
+        <i
+          className={cx(
+            "ci",
+            "icon",
+            "ci-chevron-right",
+            "table__carat--expanded"
+          )}
+        ></i>
+      </StyleCaratCell>
+      <div className={cx("table__group-row__title")}>{props.rowData.label}</div>
+    </StyledRow>
+  )
+}
 
-const columnDefinitions: ColumnDefinition[] = [
-  { dataKey: "car_make", label: "Car Make", flex: "1 0 100px" },
-  { dataKey: "car_model", label: "Car Model", flex: "1 0 100px" },
-  { dataKey: "car_year", label: "Car Year", flex: "0.5 0 50px" },
-  { dataKey: "country", label: "Country", flex: "1 0 100px" },
-  { dataKey: "car_price", label: "Price", flex: "1 0 100px" },
-  { dataKey: "comments", label: "Comments", flex: "2 0 200px" },
-]
+const ColumnDefinitionsContext = createContext<ColumnDefinition<any>[]>([])
+ColumnDefinitionsContext.displayName = "ColumnDefinitionsContext"
+const TableDataContext = createContext<RowDatum<any>[]>([])
+TableDataContext.displayName = "TableDataContext"
 
-function HeaderRow(props: RowProps<HeaderRowDatum>) {
+const BodyRow = function BodyRow<T extends CarDatum>(
+  props: RowProps<T, BodyRowDatum<T>>
+) {
+  const columnDefinitions = useContext<ColumnDefinition<T>[]>(
+    ColumnDefinitionsContext
+  )
+
+  return (
+    <StyledRow style={props.style} className={cx("table__body-row")}>
+      <StyleCaratCell key={"chevron"} flex={"0 0 48px"}></StyleCaratCell>
+      {columnDefinitions.map((columnDefinition) => (
+        <StyledCell
+          className={cx("table__td")}
+          // TODO figure out why TS believes this could be undefined
+          key={columnDefinition.dataKey as string}
+          flex={columnDefinition.flex}
+        >
+          <label className={cx("table__text-cell")}>
+            {props.rowData[columnDefinition.dataKey]}
+          </label>
+        </StyledCell>
+      ))}
+    </StyledRow>
+  )
+}
+
+function HeaderRow<T extends CarDatum>(props: RowProps<T, HeaderRowDatum>) {
+  const columnDefinitions = useContext<ColumnDefinition<T>[]>(
+    ColumnDefinitionsContext
+  )
+
   return (
     <StyledRow
       style={props.style}
@@ -198,7 +284,8 @@ function HeaderRow(props: RowProps<HeaderRowDatum>) {
       {columnDefinitions.map((columnDefinition) => (
         <StyledCell
           className={cx("table__th")}
-          key={columnDefinition.dataKey}
+          // TODO figure out why TS believes this could be undefined
+          key={columnDefinition.dataKey as string}
           flex={columnDefinition.flex}
         >
           <label className={cx("table__th__label")}>
@@ -209,51 +296,11 @@ function HeaderRow(props: RowProps<HeaderRowDatum>) {
     </StyledRow>
   )
 }
-function GroupHeaderRow(props: RowProps<GroupRowDatum>) {
-  return (
-    <StyledRow
-      style={props.style}
-      key={props.rowData.key}
-      className={cx("table__group-row", "table__group-row__content")}
-    >
-      <StyleCaratCell key={"chevron"} flex={"0 0 48px"}>
-        <i
-          className={cx(
-            "ci",
-            "icon",
-            "ci-chevron-right",
-            "table__carat--expanded"
-          )}
-        ></i>
-      </StyleCaratCell>
-      <div className={cx("table__group-row__title")}>{props.rowData.label}</div>
-    </StyledRow>
-  )
-}
-
-const BodyRow = function BodyRow<T extends CarDatum = CarDatum>(
-  props: RowProps<BodyRowDatum<T>>
-) {
-  return (
-    <StyledRow style={props.style} className={cx("table__body-row")}>
-      <StyleCaratCell key={"chevron"} flex={"0 0 48px"}></StyleCaratCell>
-      {columnDefinitions.map((columnDefinition) => (
-        <StyledCell
-          className={cx("table__td")}
-          key={columnDefinition.dataKey}
-          flex={columnDefinition.flex}
-        >
-          <label className={cx("table__text-cell")}>
-            {props.rowData[columnDefinition.dataKey]}
-          </label>
-        </StyledCell>
-      ))}
-    </StyledRow>
-  )
-}
-
-const RowSwitch = memo(function RowSwitch(props: RowSwitchProps): JSX.Element {
-  const rowData = renderData[props.index]
+const RowSwitch = memo(function RowSwitch<T extends CarDatum>(
+  props: RowSwitchProps
+): JSX.Element {
+  const tableData = useContext<RowDatum<T>[]>(TableDataContext)
+  const rowData = tableData[props.index]
 
   switch (rowData.type) {
     case RowType.Header:
@@ -274,28 +321,41 @@ const RowSwitch = memo(function RowSwitch(props: RowSwitchProps): JSX.Element {
         <BodyRow index={props.index} style={props.style} rowData={rowData} />
       )
   }
-}, areEqual)
+},
+areEqual)
 
-const getItemSize = (index: number): number => renderData[index].height
-const getItemKey: ListItemKeySelector = (index) => renderData[index].key
+export default function Table<T extends CarDatum>(
+  props: TableProps<T>
+): ReactElement {
+  // const groupDefinitions = [prop("car_make")]
+  const tableData = generateTableData(
+    props.rowDefinitions,
+    props.groupDefinitions,
+    props.data
+  )
+  const getItemSize = (index: number): number => tableData[index].height
+  const getItemKey: ListItemKeySelector = (index) => tableData[index].key
 
-export default function Table(props: TableProps): ReactElement {
   return (
-    <AutoSizer initialDimensions={props.initialDimensions}>
-      {({ dimensions }) => {
-        return (
-          <StyledList
-            height={dimensions.height}
-            itemCount={renderData.length}
-            itemSize={getItemSize}
-            width={dimensions.width}
-            className={cx("table__table")}
-            itemKey={getItemKey}
-          >
-            {RowSwitch}
-          </StyledList>
-        )
-      }}
-    </AutoSizer>
+    <ColumnDefinitionsContext.Provider value={props.columnDefinitions}>
+      <TableDataContext.Provider value={tableData}>
+        <AutoSizer initialDimensions={props.initialDimensions}>
+          {({ dimensions }) => {
+            return (
+              <StyledList
+                height={dimensions.height}
+                itemCount={tableData.length}
+                itemSize={getItemSize}
+                width={dimensions.width}
+                className={cx("table__table")}
+                itemKey={getItemKey}
+              >
+                {RowSwitch}
+              </StyledList>
+            )
+          }}
+        </AutoSizer>
+      </TableDataContext.Provider>
+    </ColumnDefinitionsContext.Provider>
   )
 }

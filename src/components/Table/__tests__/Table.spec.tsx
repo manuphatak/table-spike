@@ -6,16 +6,45 @@ import Table, {
   createGroups,
   flattenGroups,
   RowType,
+  ColumnDefinition,
+  RowDefinitions,
+  GroupDefinition,
 } from "../Table"
+import CAR_DATA from "../../../fixtures/CAR_DATA"
+
+type ArrayInfer<T extends any[]> = T extends Array<infer U> ? U : never
+type CarDatum = ArrayInfer<typeof CAR_DATA>
+
+const columnDefinitions: ColumnDefinition<CarDatum>[] = [
+  { dataKey: "car_make", label: "Car Make", flex: "1 0 100px" },
+  { dataKey: "car_model", label: "Car Model", flex: "1 0 100px" },
+  { dataKey: "car_year", label: "Car Year", flex: "0.5 0 50px" },
+  { dataKey: "country", label: "Country", flex: "1 0 100px" },
+  { dataKey: "car_price", label: "Price", flex: "1 0 100px" },
+  { dataKey: "comments", label: "Comments", flex: "2 0 200px" },
+]
+
+const rowDefinitions: RowDefinitions<CarDatum> = {
+  [RowType.Body]: {
+    height: 48,
+    keyFn: prop("id"),
+  },
+}
+
+const groupDefinitions: GroupDefinition<CarDatum>[] = [prop("car_make")]
 
 describe("render", () => {
   it("matches snapshot", () => {
     const wrapper = render(
       <Table
+        data={CAR_DATA}
         initialDimensions={{
           height: 400,
           width: 1600,
         }}
+        columnDefinitions={columnDefinitions}
+        rowDefinitions={rowDefinitions}
+        groupDefinitions={groupDefinitions}
       />
     )
 
@@ -24,7 +53,7 @@ describe("render", () => {
 })
 
 describe("createGroups", () => {
-  const data = addCommonRowData([
+  const data = addCommonRowData(rowDefinitions, [
     {
       id: 3,
       country: "Kazakhstan",
@@ -84,7 +113,7 @@ describe("createGroups", () => {
         {
           value: "Chevrolet",
           path: ["Chevrolet"],
-          children: addCommonRowData([
+          children: addCommonRowData(rowDefinitions, [
             {
               id: 3,
               country: "Kazakhstan",
@@ -99,7 +128,7 @@ describe("createGroups", () => {
         {
           value: "Cadillac",
           path: ["Cadillac"],
-          children: addCommonRowData([
+          children: addCommonRowData(rowDefinitions, [
             {
               id: 11,
               country: "Brazil",
@@ -132,7 +161,7 @@ describe("createGroups", () => {
         {
           value: "Ford",
           path: ["Ford"],
-          children: addCommonRowData([
+          children: addCommonRowData(rowDefinitions, [
             {
               id: 12,
               country: "Philippines",
@@ -157,7 +186,7 @@ describe("createGroups", () => {
               {
                 value: "Camaro",
                 path: ["Chevrolet", "Camaro"],
-                children: addCommonRowData([
+                children: addCommonRowData(rowDefinitions, [
                   {
                     id: 3,
                     country: "Kazakhstan",
@@ -178,7 +207,7 @@ describe("createGroups", () => {
               {
                 value: "Escalade EXT",
                 path: ["Cadillac", "Escalade EXT"],
-                children: addCommonRowData([
+                children: addCommonRowData(rowDefinitions, [
                   {
                     id: 11,
                     country: "Brazil",
@@ -202,7 +231,7 @@ describe("createGroups", () => {
               {
                 value: "SRX",
                 path: ["Cadillac", "SRX"],
-                children: addCommonRowData([
+                children: addCommonRowData(rowDefinitions, [
                   {
                     id: 25,
                     country: "Czech Republic",
@@ -223,7 +252,7 @@ describe("createGroups", () => {
               {
                 value: "Model T",
                 path: ["Ford", "Model T"],
-                children: addCommonRowData([
+                children: addCommonRowData(rowDefinitions, [
                   {
                     id: 12,
                     country: "Philippines",
@@ -244,7 +273,7 @@ describe("createGroups", () => {
 })
 
 describe("flattenGroups", () => {
-  const data = addCommonRowData([
+  const data = addCommonRowData(rowDefinitions, [
     {
       id: 3,
       country: "Kazakhstan",

@@ -7,6 +7,8 @@ import AutoSizer, { Dimensions } from "./AutoSizer"
 import CAR_DATA from "../../fixtures/CAR_DATA"
 import styles from "./Table.module.scss"
 
+const cx = classnames.bind(styles)
+
 interface TableProps {
   initialDimensions?: Dimensions
 }
@@ -60,8 +62,6 @@ interface RowProps<T extends RowDatum> {
   rowData: T
 }
 
-const cx = classnames.bind(styles)
-
 const StyledList = styled(VariableSizeList)`
   box-sizing: border-box;
 
@@ -84,6 +84,13 @@ const StyledCell = styled.div<{ flex: CSSProperties["flex"] }>`
   flex: ${(props) => props.flex};
   white-space: nowrap;
   overflow: hidden;
+`
+
+const StyleCaratCell = styled(StyledCell)`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 11px;
 `
 
 export function addCommonRowData<T extends CarDatum = CarDatum>(
@@ -173,6 +180,21 @@ function HeaderRow(props: RowProps<HeaderRowDatum>) {
       key={props.rowData.key}
       className={cx("table__head")}
     >
+      <StyleCaratCell
+        className={cx("table__th")}
+        key={"chevron"}
+        flex={"0 0 48px"}
+      >
+        <i
+          className={cx(
+            "ci",
+            "icon",
+            "ci-chevron-right",
+            "table__carat--expanded"
+          )}
+        ></i>
+      </StyleCaratCell>
+
       {columnDefinitions.map((columnDefinition) => (
         <StyledCell
           className={cx("table__th")}
@@ -194,6 +216,16 @@ function GroupHeaderRow(props: RowProps<GroupRowDatum>) {
       key={props.rowData.key}
       className={cx("table__group-row", "table__group-row__content")}
     >
+      <StyleCaratCell key={"chevron"} flex={"0 0 48px"}>
+        <i
+          className={cx(
+            "ci",
+            "icon",
+            "ci-chevron-right",
+            "table__carat--expanded"
+          )}
+        ></i>
+      </StyleCaratCell>
       <div className={cx("table__group-row__title")}>{props.rowData.label}</div>
     </StyledRow>
   )
@@ -204,6 +236,7 @@ const BodyRow = function BodyRow<T extends CarDatum = CarDatum>(
 ) {
   return (
     <StyledRow style={props.style} className={cx("table__body-row")}>
+      <StyleCaratCell key={"chevron"} flex={"0 0 48px"}></StyleCaratCell>
       {columnDefinitions.map((columnDefinition) => (
         <StyledCell
           className={cx("table__td")}

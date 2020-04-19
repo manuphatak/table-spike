@@ -4,7 +4,7 @@ import React, { CSSProperties, Key, memo, ReactElement } from "react"
 import { areEqual, ListItemKeySelector, VariableSizeList } from "react-window"
 import styled from "styled-components/macro"
 import AutoSizer, { Dimensions } from "./AutoSizer"
-import carData from "./carData"
+import CAR_DATA from "../../fixtures/CAR_DATA"
 import styles from "./Table.module.scss"
 
 interface TableProps {
@@ -34,7 +34,7 @@ type BodyRowDatum<T extends CarDatum> = CommonRowData &
   }
 
 type ArrayInfer<T extends any[]> = T extends Array<infer U> ? U : never
-type CarDatum = ArrayInfer<typeof carData>
+type CarDatum = ArrayInfer<typeof CAR_DATA>
 type Group<T extends CarDatum> = {
   path: string[]
   value: Key
@@ -152,7 +152,9 @@ export function flattenGroups<T extends CarDatum = CarDatum>(
 
 const renderData: RowDatum<CarDatum>[] = [
   { type: RowType.Header, height: 48, key: "header" },
-  ...flattenGroups(createGroups([prop("car_make")], addCommonRowData(carData))),
+  ...flattenGroups(
+    createGroups([prop("car_make")], addCommonRowData(CAR_DATA))
+  ),
 ]
 
 const columnDefinitions: ColumnDefinition[] = [

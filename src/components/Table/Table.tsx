@@ -1,38 +1,52 @@
 import classnames from "classnames/bind"
+import { groupBy, map, pipe, prop, toPairs, unnest } from "ramda"
 import React, { CSSProperties, Key, memo, ReactElement } from "react"
-import { areEqual, VariableSizeList, ListItemKeySelector } from "react-window"
+import { areEqual, ListItemKeySelector, VariableSizeList } from "react-window"
 import styled from "styled-components/macro"
 import AutoSizer, { Dimensions } from "./AutoSizer"
 import carData from "./carData"
 import styles from "./Table.module.scss"
-import { compose, map, toPairs, groupBy, prop, flatten } from "ramda"
 
 interface TableProps {
   initialDimensions?: Dimensions
 }
 
-enum RowType {
+export enum RowType {
   Header,
   GroupHeader,
   Body,
 }
 
-type RowData<T = CarDatum> = HeaderRowData | BodyRowData<T> | GroupRowData
 type CommonRowData = { type: RowType; height: number; key: Key }
+type RowData<T extends CarDatum = CarDatum> =
+  | HeaderRowData
+  | BodyRowData<T>
+  | GroupRowData
 type HeaderRowData = CommonRowData & { type: RowType.Header }
-type GroupRowData = CommonRowData & { type: RowType.GroupHeader; label: string }
-type BodyRowData<T> = CommonRowData & {
-  type: RowType.Body
-} & T
+type GroupRowData = CommonRowData & {
+  type: RowType.GroupHeader
+  label: string
+  depth: number
+}
+type BodyRowData<T extends CarDatum> = CommonRowData &
+  T & {
+    type: RowType.Body
+  }
 
 type ArrayInfer<T extends any[]> = T extends Array<infer U> ? U : never
 
 type CarDatum = ArrayInfer<typeof carData>
 
-interface Group<T = CarDatum> {
-  groupKey: keyof (T & CommonRowData)
-  groupData: Array<(T & CommonRowData) | Group<T>>
+const GROUP_TYPE = Symbol("GROUP_TYPE")
+type Group<T extends CarDatum & CommonRowData> = {
+  groupParents: string[]
+  groupValue: Key
+  groupData: Array<EitherGroup<T>>
 }
+
+type EitherGroup<
+  T extends CarDatum & CommonRowData = CarDatum & CommonRowData
+> = RowData<T> | Group<T>
 
 interface ColumnDefinition<T = CarDatum> {
   label: string
@@ -77,9 +91,7 @@ const StyledCell = styled.div<{ flex: CSSProperties["flex"] }>`
   overflow: hidden;
 `
 
-const groupKeys: Array<keyof (CarDatum & CommonRowData)> = ["car_make"]
-
-function addCommonRowData<T extends CarDatum = CarDatum>(
+export function addCommonRowData<T extends CarDatum = CarDatum>(
   data: T[]
 ): Array<T & CommonRowData> {
   return data.map((datum) => ({
@@ -90,40 +102,83 @@ function addCommonRowData<T extends CarDatum = CarDatum>(
   }))
 }
 
-function createGroups<T extends CarDatum = CarDatum>(
-  data: Array<T & CommonRowData>
-): Group[] {
-  return compose(
-    map(([groupKey, groupData]) => ({
-      groupKey: groupKey,
-      groupData: groupData,
-    })),
+export function createGroups<
+  T extends CarDatum = CarDatum,
+  U extends T & CommonRowData = T & CommonRowData
+>(
+  [groupFn, ...groupFns]: ((data: U) => string)[],
+  data: U[],
+  parents: string[] = []
+): EitherGroup<U>[] {
+  if (groupFn === undefined) {
+    return data
+  }
+  return pipe(
+    groupBy<U>(groupFn),
     toPairs,
-    groupBy(prop("car_make"))
+    map(([groupValue, groupData]) => {
+      const groupParents = [...parents, groupValue]
+      return createGroup<U>({
+        groupValue,
+        groupData: createGroups(groupFns, groupData, groupParents),
+        groupParents,
+      })
+    })
   )(data)
 }
 
-function flattenGroups<T extends CarDatum = CarDatum>(
-  groups: Group<T>[]
-): RowData<T>[] {
-  return flatten(
-    groups.map((group) => {
-      return [
-        {
-          type: RowType.GroupHeader,
-          height: 48,
-          key: group.groupKey,
-          label: group.groupKey,
-        },
-        ...group.groupData,
-      ]
-    })
+function createGroup<
+  U extends CarDatum & CommonRowData = CarDatum & CommonRowData
+>({ groupValue, groupData, groupParents }: Group<U>): Group<U> {
+  return Object.defineProperty(
+    {
+      groupValue: groupValue,
+      groupData: groupData,
+      groupParents: groupParents,
+    },
+    GROUP_TYPE,
+    {}
   )
+}
+
+function isGroup<T extends CarDatum & CommonRowData>(
+  eitherGroup: EitherGroup<T>
+): eitherGroup is Group<T> {
+  return eitherGroup.hasOwnProperty(GROUP_TYPE)
+}
+
+function unravel<T extends CarDatum & CommonRowData = CarDatum & CommonRowData>(
+  groupOrRow: EitherGroup<T>
+): RowData<T> | RowData<T>[] {
+  if (isGroup(groupOrRow)) {
+    const groupHeader: GroupRowData = {
+      type: RowType.GroupHeader,
+      height: 48,
+      depth: groupOrRow.groupParents.length,
+      key: groupOrRow.groupParents.join("::"),
+      label: groupOrRow.groupValue.toString(),
+    }
+    const groupChildren: RowData<T>[] = flattenGroups<T>(groupOrRow.groupData)
+    const groupRows: RowData<T>[] = [groupHeader, ...groupChildren]
+    return groupRows
+  }
+  const row: RowData<T> = groupOrRow
+  return row
+}
+
+export function flattenGroups<
+  T extends CarDatum & CommonRowData = CarDatum & CommonRowData
+>(groupOrRows: EitherGroup<T>[]): RowData<T>[] {
+  const rows: RowData<T>[] | RowData<T>[][] = groupOrRows.map(unravel)
+
+  const result: RowData<T>[] = unnest(rows)
+
+  return result
 }
 
 const renderData: RowData<CarDatum>[] = [
   { type: RowType.Header, height: 48, key: "header" },
-  ...flattenGroups(createGroups(addCommonRowData(carData))),
+  ...flattenGroups(createGroups([prop("car_make")], addCommonRowData(carData))),
 ]
 
 const columnDefinitions: ColumnDefinition[] = [

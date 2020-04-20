@@ -18,10 +18,10 @@ const cx = classnames.bind(styles)
 
 interface TableProps<T extends CarDatum> {
   initialDimensions?: Dimensions
+  groups: BodyRowOrGroup<BodyRowDatum<T>>[]
   data: T[]
   columnDefinitions: ColumnDefinition<T>[]
-  rowDefinitions: RowDefinitions<T>
-  groupDefinitions: GroupDefinition<T>[]
+  collapsedGroupPaths: string[]
 }
 
 export enum RowType {
@@ -40,6 +40,7 @@ type GroupRowDatum = CommonRowData & {
   type: RowType.GroupHeader
   label: string
   depth: number
+  collapsed: boolean
 }
 type BodyRowDatum<T extends CarDatum> = CommonRowData &
   T & {
@@ -126,6 +127,23 @@ const GroupHeaderRowTitle = styled.div`
   font-weight: 700;
 `
 
+export function groupPaths<T extends CarDatum>(
+  groupOrRows: BodyRowOrGroup<T>[]
+): string[] {
+  return unnest(
+    groupOrRows.map((groupOrRow) => {
+      if (isBodyRow<T>(groupOrRow)) {
+        return []
+      }
+
+      return [
+        JSON.stringify(groupOrRow.path),
+        ...groupPaths<T>(groupOrRow.children),
+      ]
+    })
+  ).sort()
+}
+
 export function addCommonRowData<T extends CarDatum>(
   rowDefinitions: RowDefinitions<T>,
   data: T[]
@@ -146,21 +164,21 @@ export function createGroups<
   T extends CarDatum,
   U extends BodyRowDatum<T> = BodyRowDatum<T>
 >(
-  [groupFn, ...groupFns]: GroupDefinition<T>[],
+  [groupDefinition, ...groupDefinitions]: GroupDefinition<T>[],
   data: U[],
   parents: Key[] = []
 ): BodyRowOrGroup<U>[] {
-  if (groupFn === undefined) {
+  if (groupDefinition === undefined) {
     return data
   }
   return pipe(
-    groupBy<U>(asString(groupFn)),
+    groupBy<U>(asString(groupDefinition)),
     toPairs,
     map(([value, children]) => {
       const path = [...parents, value]
       return {
         value,
-        children: createGroups(groupFns, children, path),
+        children: createGroups(groupDefinitions, children, path),
         path,
       }
     })
@@ -174,6 +192,7 @@ function isBodyRow<T extends CarDatum>(
 }
 
 export function flattenGroups<T extends CarDatum>(
+  collapsedGroupPaths: string[],
   groupOrRows: BodyRowOrGroup<T>[]
 ): (BodyRowDatum<T> | GroupRowDatum)[] {
   return unnest(
@@ -182,29 +201,41 @@ export function flattenGroups<T extends CarDatum>(
         return [groupOrRow]
       }
 
+      const key = JSON.stringify(groupOrRow.path)
+      const collapsed = collapsedGroupPaths.includes(key)
+
       const groupHeader: GroupRowDatum = {
         type: RowType.GroupHeader,
         height: 48,
         depth: groupOrRow.path.length - 1,
-        key: JSON.stringify(groupOrRow.path),
+        key,
+        collapsed,
         label: groupOrRow.value.toString(),
       }
+      const children = collapsed
+        ? []
+        : flattenGroups<T>(collapsedGroupPaths, groupOrRow.children)
 
-      return [groupHeader, ...flattenGroups<T>(groupOrRow.children)]
+      return [groupHeader, ...children]
     })
   )
 }
 function generateTableData<T extends CarDatum>(
-  rowDefinitions: RowDefinitions<T>,
-  groupDefinitions: GroupDefinition<T>[],
-  data: T[]
+  collapsedGroupPaths: string[],
+  groups: BodyRowOrGroup<BodyRowDatum<T>>[]
 ): RowDatum<T>[] {
   return [
     { type: RowType.Header, height: 48, key: "header" },
-    ...flattenGroups(
-      createGroups(groupDefinitions, addCommonRowData(rowDefinitions, data))
-    ),
+    ...flattenGroups(collapsedGroupPaths, groups),
   ]
+}
+
+export function generateGroups<T extends CarDatum>(
+  rowDefinitions: RowDefinitions<T>,
+  groupDefinitions: GroupDefinition<T, BodyRowDatum<T>>[],
+  data: T[]
+): BodyRowOrGroup<BodyRowDatum<T>>[] {
+  return createGroups(groupDefinitions, addCommonRowData(rowDefinitions, data))
 }
 
 function GroupHeaderRow<T extends CarDatum>(props: RowProps<T, GroupRowDatum>) {
@@ -335,12 +366,7 @@ areEqual)
 export default function Table<T extends CarDatum>(
   props: TableProps<T>
 ): ReactElement {
-  // const groupDefinitions = [prop("car_make")]
-  const tableData = generateTableData(
-    props.rowDefinitions,
-    props.groupDefinitions,
-    props.data
-  )
+  const tableData = generateTableData(props.collapsedGroupPaths, props.groups)
   const getItemSize = (index: number): number => tableData[index].height
   const getItemKey: ListItemKeySelector = (index) => tableData[index].key
 
@@ -348,20 +374,18 @@ export default function Table<T extends CarDatum>(
     <ColumnDefinitionsContext.Provider value={props.columnDefinitions}>
       <TableDataContext.Provider value={tableData}>
         <AutoSizer initialDimensions={props.initialDimensions}>
-          {({ dimensions }) => {
-            return (
-              <StyledList
-                height={dimensions.height}
-                itemCount={tableData.length}
-                itemSize={getItemSize}
-                width={dimensions.width}
-                className={cx("table__table")}
-                itemKey={getItemKey}
-              >
-                {RowSwitch}
-              </StyledList>
-            )
-          }}
+          {({ dimensions }) => (
+            <StyledList
+              height={dimensions.height}
+              itemCount={tableData.length}
+              itemSize={getItemSize}
+              width={dimensions.width}
+              className={cx("table__table")}
+              itemKey={getItemKey}
+            >
+              {RowSwitch}
+            </StyledList>
+          )}
         </AutoSizer>
       </TableDataContext.Provider>
     </ColumnDefinitionsContext.Provider>

@@ -8,6 +8,7 @@ import {
   GroupDefinition,
   RowDefinitions,
   RowType,
+  generateGroups,
 } from "./Table"
 
 export default {
@@ -36,12 +37,22 @@ const rowDefinitions: RowDefinitions<CarDatum> = {
 
 export const Basic = () => {
   const groupDefinitions = groupDefinitionsKnob()
+  const groups = generateGroups<CarDatum>(
+    rowDefinitions,
+    groupDefinitions,
+    CAR_DATA
+  )
+  const collapsedGroupPaths: string[] = [
+    JSON.stringify(["China"]),
+    JSON.stringify(["Japan", "Ford"]),
+  ]
+
   return (
     <Table
       data={CAR_DATA}
+      groups={groups}
       columnDefinitions={columnDefinitions}
-      rowDefinitions={rowDefinitions}
-      groupDefinitions={groupDefinitions}
+      collapsedGroupPaths={collapsedGroupPaths}
     />
   )
 }

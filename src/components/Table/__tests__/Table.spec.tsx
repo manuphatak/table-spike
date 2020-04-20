@@ -9,6 +9,8 @@ import Table, {
   ColumnDefinition,
   RowDefinitions,
   GroupDefinition,
+  groupPaths,
+  generateGroups,
 } from "../Table"
 import CAR_DATA from "../../../fixtures/CAR_DATA"
 
@@ -35,6 +37,11 @@ const groupDefinitions: GroupDefinition<CarDatum>[] = [prop("car_make")]
 
 describe("render", () => {
   it("matches snapshot", () => {
+    const groups = generateGroups<CarDatum>(
+      rowDefinitions,
+      groupDefinitions,
+      CAR_DATA
+    )
     const wrapper = render(
       <Table
         data={CAR_DATA}
@@ -42,9 +49,9 @@ describe("render", () => {
           height: 400,
           width: 1600,
         }}
+        groups={groups}
         columnDefinitions={columnDefinitions}
-        rowDefinitions={rowDefinitions}
-        groupDefinitions={groupDefinitions}
+        collapsedGroupPaths={[JSON.stringify(["Mercury"])]}
       />
     )
 
@@ -323,104 +330,114 @@ describe("flattenGroups", () => {
 
   describe("given flat data", () => {
     it("is a noop", () => {
-      expect(flattenGroups(data)).toEqual(data)
+      expect(flattenGroups([], data)).toEqual(data)
     })
   })
 
   describe("given a single grouping fn", () => {
     it("flattens the group into rows", () => {
-      expect(flattenGroups(createGroups([prop("car_make")], data))).toEqual([
-        {
-          type: RowType.GroupHeader,
-          height: 48,
-          key: JSON.stringify(["Chevrolet"]),
-          label: "Chevrolet",
-          depth: 0,
-        },
-        {
-          type: RowType.Body,
-          id: 3,
-          country: "Kazakhstan",
-          car_make: "Chevrolet",
-          car_model: "Camaro",
-          car_year: 1976,
-          car_price: "$5602.92",
-          comments: "e-enable synergistic e-markets",
-          height: 48,
-          key: 3,
-        },
-        {
-          type: RowType.GroupHeader,
-          height: 48,
-          key: JSON.stringify(["Cadillac"]),
-          label: "Cadillac",
-          depth: 0,
-        },
-        {
-          type: RowType.Body,
-          id: 11,
-          country: "Brazil",
-          car_make: "Cadillac",
-          car_model: "Escalade EXT",
-          car_year: 2006,
-          car_price: "$7834.39",
-          comments: "drive interactive systems",
-          height: 48,
-          key: 11,
-        },
-        {
-          type: RowType.Body,
-          id: 25,
-          country: "Czech Republic",
-          car_make: "Cadillac",
-          car_model: "SRX",
-          car_year: 2007,
-          car_price: "$6722.29",
-          comments: "repurpose front-end interfaces",
-          height: 48,
-          key: 25,
-        },
-        {
-          type: RowType.Body,
-          id: 101,
-          country: "Russia",
-          car_make: "Cadillac",
-          car_model: "Escalade EXT",
-          car_year: 2002,
-          car_price: "$7713.56",
-          comments: "incentivize bricks-and-clicks deliverables",
-          height: 48,
-          key: 101,
-        },
-        {
-          type: RowType.GroupHeader,
-          height: 48,
-          key: JSON.stringify(["Ford"]),
-          label: "Ford",
-          depth: 0,
-        },
-        {
-          type: RowType.Body,
-          id: 12,
-          country: "Philippines",
-          car_make: "Ford",
-          car_model: "Model T",
-          car_year: 1909,
-          car_price: "$8869.46",
-          comments: "redefine seamless paradigms",
-          height: 48,
-          key: 12,
-        },
-      ])
+      expect(flattenGroups([], createGroups([prop("car_make")], data))).toEqual(
+        [
+          {
+            type: RowType.GroupHeader,
+            collapsed: false,
+            height: 48,
+            key: JSON.stringify(["Chevrolet"]),
+            label: "Chevrolet",
+            depth: 0,
+          },
+          {
+            type: RowType.Body,
+            id: 3,
+            country: "Kazakhstan",
+            car_make: "Chevrolet",
+            car_model: "Camaro",
+            car_year: 1976,
+            car_price: "$5602.92",
+            comments: "e-enable synergistic e-markets",
+            height: 48,
+            key: 3,
+          },
+          {
+            type: RowType.GroupHeader,
+            collapsed: false,
+            height: 48,
+            key: JSON.stringify(["Cadillac"]),
+            label: "Cadillac",
+            depth: 0,
+          },
+          {
+            type: RowType.Body,
+            id: 11,
+            country: "Brazil",
+            car_make: "Cadillac",
+            car_model: "Escalade EXT",
+            car_year: 2006,
+            car_price: "$7834.39",
+            comments: "drive interactive systems",
+            height: 48,
+            key: 11,
+          },
+          {
+            type: RowType.Body,
+            id: 25,
+            country: "Czech Republic",
+            car_make: "Cadillac",
+            car_model: "SRX",
+            car_year: 2007,
+            car_price: "$6722.29",
+            comments: "repurpose front-end interfaces",
+            height: 48,
+            key: 25,
+          },
+          {
+            type: RowType.Body,
+            id: 101,
+            country: "Russia",
+            car_make: "Cadillac",
+            car_model: "Escalade EXT",
+            car_year: 2002,
+            car_price: "$7713.56",
+            comments: "incentivize bricks-and-clicks deliverables",
+            height: 48,
+            key: 101,
+          },
+          {
+            type: RowType.GroupHeader,
+            collapsed: false,
+            height: 48,
+            key: JSON.stringify(["Ford"]),
+            label: "Ford",
+            depth: 0,
+          },
+          {
+            type: RowType.Body,
+            id: 12,
+            country: "Philippines",
+            car_make: "Ford",
+            car_model: "Model T",
+            car_year: 1909,
+            car_price: "$8869.46",
+            comments: "redefine seamless paradigms",
+            height: 48,
+            key: 12,
+          },
+        ]
+      )
     })
   })
+
   describe("given multiple grouping fns", () => {
     it("flattens the group into rows", () => {
       expect(
-        flattenGroups(createGroups([prop("car_make"), prop("car_model")], data))
+        flattenGroups(
+          [],
+          createGroups([prop("car_make"), prop("car_model")], data)
+        )
       ).toEqual([
         {
           type: RowType.GroupHeader,
+          collapsed: false,
           height: 48,
           key: JSON.stringify(["Chevrolet"]),
           label: "Chevrolet",
@@ -428,6 +445,7 @@ describe("flattenGroups", () => {
         },
         {
           type: RowType.GroupHeader,
+          collapsed: false,
           height: 48,
           key: JSON.stringify(["Chevrolet", "Camaro"]),
           label: "Camaro",
@@ -447,6 +465,7 @@ describe("flattenGroups", () => {
         },
         {
           type: RowType.GroupHeader,
+          collapsed: false,
           height: 48,
           key: JSON.stringify(["Cadillac"]),
           label: "Cadillac",
@@ -454,6 +473,7 @@ describe("flattenGroups", () => {
         },
         {
           type: RowType.GroupHeader,
+          collapsed: false,
           height: 48,
           key: JSON.stringify(["Cadillac", "Escalade EXT"]),
           label: "Escalade EXT",
@@ -485,6 +505,97 @@ describe("flattenGroups", () => {
         },
         {
           type: RowType.GroupHeader,
+          collapsed: false,
+          height: 48,
+          key: JSON.stringify(["Cadillac", "SRX"]),
+          label: "SRX",
+          depth: 1,
+        },
+        {
+          type: RowType.Body,
+          id: 25,
+          country: "Czech Republic",
+          car_make: "Cadillac",
+          car_model: "SRX",
+          car_year: 2007,
+          car_price: "$6722.29",
+          comments: "repurpose front-end interfaces",
+          height: 48,
+          key: 25,
+        },
+        {
+          type: RowType.GroupHeader,
+          collapsed: false,
+          height: 48,
+          key: JSON.stringify(["Ford"]),
+          label: "Ford",
+          depth: 0,
+        },
+        {
+          type: RowType.GroupHeader,
+          collapsed: false,
+          height: 48,
+          key: JSON.stringify(["Ford", "Model T"]),
+          label: "Model T",
+          depth: 1,
+        },
+        {
+          type: RowType.Body,
+          id: 12,
+          country: "Philippines",
+          car_make: "Ford",
+          car_model: "Model T",
+          car_year: 1909,
+          car_price: "$8869.46",
+          comments: "redefine seamless paradigms",
+          height: 48,
+          key: 12,
+        },
+      ])
+    })
+  })
+
+  describe("given collapsed groups", () => {
+    it("skips children of collapsed groups", () => {
+      const collapsedGroupPaths: string[] = [
+        JSON.stringify(["Ford"]),
+        JSON.stringify(["Cadillac", "Escalade EXT"]),
+        JSON.stringify(["Chevrolet"]),
+      ]
+      expect(
+        flattenGroups(
+          collapsedGroupPaths,
+          createGroups([prop("car_make"), prop("car_model")], data)
+        )
+      ).toEqual([
+        {
+          type: RowType.GroupHeader,
+          collapsed: true,
+          height: 48,
+          key: JSON.stringify(["Chevrolet"]),
+          label: "Chevrolet",
+          depth: 0,
+        },
+        {
+          type: RowType.GroupHeader,
+          collapsed: false,
+          height: 48,
+          key: JSON.stringify(["Cadillac"]),
+          label: "Cadillac",
+          depth: 0,
+        },
+        {
+          type: RowType.GroupHeader,
+
+          height: 48,
+          key: JSON.stringify(["Cadillac", "Escalade EXT"]),
+          label: "Escalade EXT",
+          depth: 1,
+          collapsed: true,
+        },
+        {
+          type: RowType.GroupHeader,
+          collapsed: false,
           height: 48,
           key: JSON.stringify(["Cadillac", "SRX"]),
           label: "SRX",
@@ -508,26 +619,101 @@ describe("flattenGroups", () => {
           key: JSON.stringify(["Ford"]),
           label: "Ford",
           depth: 0,
+          collapsed: true,
         },
-        {
-          type: RowType.GroupHeader,
-          height: 48,
-          key: JSON.stringify(["Ford", "Model T"]),
-          label: "Model T",
-          depth: 1,
-        },
-        {
-          type: RowType.Body,
-          id: 12,
-          country: "Philippines",
-          car_make: "Ford",
-          car_model: "Model T",
-          car_year: 1909,
-          car_price: "$8869.46",
-          comments: "redefine seamless paradigms",
-          height: 48,
-          key: 12,
-        },
+      ])
+    })
+  })
+})
+describe("groupPaths", () => {
+  const data = [
+    {
+      id: 3,
+      country: "Kazakhstan",
+      car_make: "Chevrolet",
+      car_model: "Camaro",
+      car_year: 1976,
+      car_price: "$5602.92",
+      comments: "e-enable synergistic e-markets",
+    },
+    {
+      id: 11,
+      country: "Brazil",
+      car_make: "Cadillac",
+      car_model: "Escalade EXT",
+      car_year: 2006,
+      car_price: "$7834.39",
+      comments: "drive interactive systems",
+    },
+    {
+      id: 12,
+      country: "Philippines",
+      car_make: "Ford",
+      car_model: "Model T",
+      car_year: 1909,
+      car_price: "$8869.46",
+      comments: "redefine seamless paradigms",
+    },
+    {
+      id: 25,
+      country: "Czech Republic",
+      car_make: "Cadillac",
+      car_model: "SRX",
+      car_year: 2007,
+      car_price: "$6722.29",
+      comments: "repurpose front-end interfaces",
+    },
+    {
+      id: 101,
+      country: "Russia",
+      car_make: "Cadillac",
+      car_model: "Escalade EXT",
+      car_year: 2002,
+      car_price: "$7713.56",
+      comments: "incentivize bricks-and-clicks deliverables",
+    },
+  ]
+
+  describe("given an empty groupDefinition list", () => {
+    it("is empty", () => {
+      const groupsOrRows = generateGroups(rowDefinitions, [], data)
+
+      expect(groupPaths(groupsOrRows)).toEqual([])
+    })
+  })
+
+  describe("given a single groupDefinition", () => {
+    it("finds the group paths", () => {
+      const groupsOrRows = generateGroups(
+        rowDefinitions,
+        [prop("car_make")],
+        data
+      )
+
+      expect(groupPaths(groupsOrRows)).toEqual([
+        JSON.stringify(["Cadillac"]),
+        JSON.stringify(["Chevrolet"]),
+        JSON.stringify(["Ford"]),
+      ])
+    })
+  })
+
+  describe("given multiple groupDefinitions", () => {
+    it("finds recursive paths", () => {
+      const groupsOrRows = generateGroups(
+        rowDefinitions,
+        [prop("car_make"), prop("car_model")],
+        data
+      )
+
+      expect(groupPaths(groupsOrRows)).toEqual([
+        JSON.stringify(["Cadillac", "Escalade EXT"]),
+        JSON.stringify(["Cadillac", "SRX"]),
+        JSON.stringify(["Cadillac"]),
+        JSON.stringify(["Chevrolet", "Camaro"]),
+        JSON.stringify(["Chevrolet"]),
+        JSON.stringify(["Ford", "Model T"]),
+        JSON.stringify(["Ford"]),
       ])
     })
   })

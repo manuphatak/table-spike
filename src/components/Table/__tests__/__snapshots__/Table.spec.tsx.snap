@@ -98,7 +98,7 @@ exports[`render matches snapshot 1`] = `
     style="position:relative;height:400px;width:1600px;overflow:auto;-webkit-overflow-scrolling:touch;will-change:transform;direction:ltr"
   >
     <div
-      style="height:53128px;width:100%"
+      style="height:52228px;width:100%"
     >
       <div
         class="c2 table__head"
@@ -187,65 +187,23 @@ exports[`render matches snapshot 1`] = `
         </div>
       </div>
       <div
-        class="c2 table__body-row"
+        class="c2 table__group-row table__group-row__content"
         style="position:absolute;left:0;top:96px;height:48px;width:100%"
       >
         <div
-          class="c3"
+          class="c7"
         />
         <div
-          class="c4 table__td"
+          class="c3"
         >
-          <label
-            class="table__text-cell"
-          >
-            Mercury
-          </label>
+          <i
+            class="ci icon ci-chevron-right table__carat--expanded"
+          />
         </div>
         <div
-          class="c4 table__td"
+          class="c8 table__group-row__title"
         >
-          <label
-            class="table__text-cell"
-          >
-            Mountaineer
-          </label>
-        </div>
-        <div
-          class="c5 table__td"
-        >
-          <label
-            class="table__text-cell"
-          >
-            1997
-          </label>
-        </div>
-        <div
-          class="c4 table__td"
-        >
-          <label
-            class="table__text-cell"
-          >
-            China
-          </label>
-        </div>
-        <div
-          class="c4 table__td"
-        >
-          <label
-            class="table__text-cell"
-          >
-            $8545.87
-          </label>
-        </div>
-        <div
-          class="c6 table__td"
-        >
-          <label
-            class="table__text-cell"
-          >
-            engage cutting-edge systems
-          </label>
+          Ford
         </div>
       </div>
       <div
@@ -261,7 +219,7 @@ exports[`render matches snapshot 1`] = `
           <label
             class="table__text-cell"
           >
-            Mercury
+            Ford
           </label>
         </div>
         <div
@@ -270,7 +228,7 @@ exports[`render matches snapshot 1`] = `
           <label
             class="table__text-cell"
           >
-            Grand Marquis
+            Festiva
           </label>
         </div>
         <div
@@ -279,7 +237,7 @@ exports[`render matches snapshot 1`] = `
           <label
             class="table__text-cell"
           >
-            1985
+            1989
           </label>
         </div>
         <div
@@ -288,7 +246,7 @@ exports[`render matches snapshot 1`] = `
           <label
             class="table__text-cell"
           >
-            Indonesia
+            Japan
           </label>
         </div>
         <div
@@ -297,7 +255,7 @@ exports[`render matches snapshot 1`] = `
           <label
             class="table__text-cell"
           >
-            $3382.45
+            $9988.21
           </label>
         </div>
         <div
@@ -306,7 +264,7 @@ exports[`render matches snapshot 1`] = `
           <label
             class="table__text-cell"
           >
-            disintermediate impactful e-business
+            implement next-generation channels
           </label>
         </div>
       </div>
@@ -323,7 +281,7 @@ exports[`render matches snapshot 1`] = `
           <label
             class="table__text-cell"
           >
-            Mercury
+            Ford
           </label>
         </div>
         <div
@@ -332,7 +290,7 @@ exports[`render matches snapshot 1`] = `
           <label
             class="table__text-cell"
           >
-            Mountaineer
+            Model T
           </label>
         </div>
         <div
@@ -341,379 +299,7 @@ exports[`render matches snapshot 1`] = `
           <label
             class="table__text-cell"
           >
-            2001
-          </label>
-        </div>
-        <div
-          class="c4 table__td"
-        >
-          <label
-            class="table__text-cell"
-          >
-            China
-          </label>
-        </div>
-        <div
-          class="c4 table__td"
-        >
-          <label
-            class="table__text-cell"
-          >
-            $3146.50
-          </label>
-        </div>
-        <div
-          class="c6 table__td"
-        >
-          <label
-            class="table__text-cell"
-          >
-            incentivize world-class web-readiness
-          </label>
-        </div>
-      </div>
-      <div
-        class="c2 table__body-row"
-        style="position:absolute;left:0;top:240px;height:48px;width:100%"
-      >
-        <div
-          class="c3"
-        />
-        <div
-          class="c4 table__td"
-        >
-          <label
-            class="table__text-cell"
-          >
-            Mercury
-          </label>
-        </div>
-        <div
-          class="c4 table__td"
-        >
-          <label
-            class="table__text-cell"
-          >
-            Monterey
-          </label>
-        </div>
-        <div
-          class="c5 table__td"
-        >
-          <label
-            class="table__text-cell"
-          >
-            2005
-          </label>
-        </div>
-        <div
-          class="c4 table__td"
-        >
-          <label
-            class="table__text-cell"
-          >
-            China
-          </label>
-        </div>
-        <div
-          class="c4 table__td"
-        >
-          <label
-            class="table__text-cell"
-          >
-            $3586.33
-          </label>
-        </div>
-        <div
-          class="c6 table__td"
-        >
-          <label
-            class="table__text-cell"
-          >
-            extend killer ROI
-          </label>
-        </div>
-      </div>
-      <div
-        class="c2 table__body-row"
-        style="position:absolute;left:0;top:288px;height:48px;width:100%"
-      >
-        <div
-          class="c3"
-        />
-        <div
-          class="c4 table__td"
-        >
-          <label
-            class="table__text-cell"
-          >
-            Mercury
-          </label>
-        </div>
-        <div
-          class="c4 table__td"
-        >
-          <label
-            class="table__text-cell"
-          >
-            Capri
-          </label>
-        </div>
-        <div
-          class="c5 table__td"
-        >
-          <label
-            class="table__text-cell"
-          >
-            1992
-          </label>
-        </div>
-        <div
-          class="c4 table__td"
-        >
-          <label
-            class="table__text-cell"
-          >
-            China
-          </label>
-        </div>
-        <div
-          class="c4 table__td"
-        >
-          <label
-            class="table__text-cell"
-          >
-            $6812.68
-          </label>
-        </div>
-        <div
-          class="c6 table__td"
-        >
-          <label
-            class="table__text-cell"
-          >
-            harness transparent users
-          </label>
-        </div>
-      </div>
-      <div
-        class="c2 table__body-row"
-        style="position:absolute;left:0;top:336px;height:48px;width:100%"
-      >
-        <div
-          class="c3"
-        />
-        <div
-          class="c4 table__td"
-        >
-          <label
-            class="table__text-cell"
-          >
-            Mercury
-          </label>
-        </div>
-        <div
-          class="c4 table__td"
-        >
-          <label
-            class="table__text-cell"
-          >
-            Sable
-          </label>
-        </div>
-        <div
-          class="c5 table__td"
-        >
-          <label
-            class="table__text-cell"
-          >
-            2002
-          </label>
-        </div>
-        <div
-          class="c4 table__td"
-        >
-          <label
-            class="table__text-cell"
-          >
-            Indonesia
-          </label>
-        </div>
-        <div
-          class="c4 table__td"
-        >
-          <label
-            class="table__text-cell"
-          >
-            $8796.52
-          </label>
-        </div>
-        <div
-          class="c6 table__td"
-        >
-          <label
-            class="table__text-cell"
-          >
-            envisioneer integrated channels
-          </label>
-        </div>
-      </div>
-      <div
-        class="c2 table__body-row"
-        style="position:absolute;left:0;top:384px;height:48px;width:100%"
-      >
-        <div
-          class="c3"
-        />
-        <div
-          class="c4 table__td"
-        >
-          <label
-            class="table__text-cell"
-          >
-            Mercury
-          </label>
-        </div>
-        <div
-          class="c4 table__td"
-        >
-          <label
-            class="table__text-cell"
-          >
-            Lynx
-          </label>
-        </div>
-        <div
-          class="c5 table__td"
-        >
-          <label
-            class="table__text-cell"
-          >
-            1984
-          </label>
-        </div>
-        <div
-          class="c4 table__td"
-        >
-          <label
-            class="table__text-cell"
-          >
-            Indonesia
-          </label>
-        </div>
-        <div
-          class="c4 table__td"
-        >
-          <label
-            class="table__text-cell"
-          >
-            $6908.80
-          </label>
-        </div>
-        <div
-          class="c6 table__td"
-        >
-          <label
-            class="table__text-cell"
-          >
-            incubate viral action-items
-          </label>
-        </div>
-      </div>
-      <div
-        class="c2 table__body-row"
-        style="position:absolute;left:0;top:432px;height:48px;width:100%"
-      >
-        <div
-          class="c3"
-        />
-        <div
-          class="c4 table__td"
-        >
-          <label
-            class="table__text-cell"
-          >
-            Mercury
-          </label>
-        </div>
-        <div
-          class="c4 table__td"
-        >
-          <label
-            class="table__text-cell"
-          >
-            Mariner
-          </label>
-        </div>
-        <div
-          class="c5 table__td"
-        >
-          <label
-            class="table__text-cell"
-          >
-            2009
-          </label>
-        </div>
-        <div
-          class="c4 table__td"
-        >
-          <label
-            class="table__text-cell"
-          >
-            Colombia
-          </label>
-        </div>
-        <div
-          class="c4 table__td"
-        >
-          <label
-            class="table__text-cell"
-          >
-            $1036.71
-          </label>
-        </div>
-        <div
-          class="c6 table__td"
-        >
-          <label
-            class="table__text-cell"
-          >
-            embrace proactive channels
-          </label>
-        </div>
-      </div>
-      <div
-        class="c2 table__body-row"
-        style="position:absolute;left:0;top:480px;height:48px;width:100%"
-      >
-        <div
-          class="c3"
-        />
-        <div
-          class="c4 table__td"
-        >
-          <label
-            class="table__text-cell"
-          >
-            Mercury
-          </label>
-        </div>
-        <div
-          class="c4 table__td"
-        >
-          <label
-            class="table__text-cell"
-          >
-            Sable
-          </label>
-        </div>
-        <div
-          class="c5 table__td"
-        >
-          <label
-            class="table__text-cell"
-          >
-            1998
+            1909
           </label>
         </div>
         <div
@@ -731,7 +317,7 @@ exports[`render matches snapshot 1`] = `
           <label
             class="table__text-cell"
           >
-            $9516.27
+            $8869.46
           </label>
         </div>
         <div
@@ -740,7 +326,379 @@ exports[`render matches snapshot 1`] = `
           <label
             class="table__text-cell"
           >
-            architect mission-critical schemas
+            redefine seamless paradigms
+          </label>
+        </div>
+      </div>
+      <div
+        class="c2 table__body-row"
+        style="position:absolute;left:0;top:240px;height:48px;width:100%"
+      >
+        <div
+          class="c3"
+        />
+        <div
+          class="c4 table__td"
+        >
+          <label
+            class="table__text-cell"
+          >
+            Ford
+          </label>
+        </div>
+        <div
+          class="c4 table__td"
+        >
+          <label
+            class="table__text-cell"
+          >
+            Fairlane
+          </label>
+        </div>
+        <div
+          class="c5 table__td"
+        >
+          <label
+            class="table__text-cell"
+          >
+            1965
+          </label>
+        </div>
+        <div
+          class="c4 table__td"
+        >
+          <label
+            class="table__text-cell"
+          >
+            China
+          </label>
+        </div>
+        <div
+          class="c4 table__td"
+        >
+          <label
+            class="table__text-cell"
+          >
+            $419.23
+          </label>
+        </div>
+        <div
+          class="c6 table__td"
+        >
+          <label
+            class="table__text-cell"
+          >
+            redefine turn-key applications
+          </label>
+        </div>
+      </div>
+      <div
+        class="c2 table__body-row"
+        style="position:absolute;left:0;top:288px;height:48px;width:100%"
+      >
+        <div
+          class="c3"
+        />
+        <div
+          class="c4 table__td"
+        >
+          <label
+            class="table__text-cell"
+          >
+            Ford
+          </label>
+        </div>
+        <div
+          class="c4 table__td"
+        >
+          <label
+            class="table__text-cell"
+          >
+            LTD Crown Victoria
+          </label>
+        </div>
+        <div
+          class="c5 table__td"
+        >
+          <label
+            class="table__text-cell"
+          >
+            1984
+          </label>
+        </div>
+        <div
+          class="c4 table__td"
+        >
+          <label
+            class="table__text-cell"
+          >
+            China
+          </label>
+        </div>
+        <div
+          class="c4 table__td"
+        >
+          <label
+            class="table__text-cell"
+          >
+            $7036.82
+          </label>
+        </div>
+        <div
+          class="c6 table__td"
+        >
+          <label
+            class="table__text-cell"
+          >
+            repurpose user-centric networks
+          </label>
+        </div>
+      </div>
+      <div
+        class="c2 table__body-row"
+        style="position:absolute;left:0;top:336px;height:48px;width:100%"
+      >
+        <div
+          class="c3"
+        />
+        <div
+          class="c4 table__td"
+        >
+          <label
+            class="table__text-cell"
+          >
+            Ford
+          </label>
+        </div>
+        <div
+          class="c4 table__td"
+        >
+          <label
+            class="table__text-cell"
+          >
+            Ranger
+          </label>
+        </div>
+        <div
+          class="c5 table__td"
+        >
+          <label
+            class="table__text-cell"
+          >
+            2005
+          </label>
+        </div>
+        <div
+          class="c4 table__td"
+        >
+          <label
+            class="table__text-cell"
+          >
+            Mali
+          </label>
+        </div>
+        <div
+          class="c4 table__td"
+        >
+          <label
+            class="table__text-cell"
+          >
+            $1841.99
+          </label>
+        </div>
+        <div
+          class="c6 table__td"
+        >
+          <label
+            class="table__text-cell"
+          >
+            implement 24/7 functionalities
+          </label>
+        </div>
+      </div>
+      <div
+        class="c2 table__body-row"
+        style="position:absolute;left:0;top:384px;height:48px;width:100%"
+      >
+        <div
+          class="c3"
+        />
+        <div
+          class="c4 table__td"
+        >
+          <label
+            class="table__text-cell"
+          >
+            Ford
+          </label>
+        </div>
+        <div
+          class="c4 table__td"
+        >
+          <label
+            class="table__text-cell"
+          >
+            Thunderbird
+          </label>
+        </div>
+        <div
+          class="c5 table__td"
+        >
+          <label
+            class="table__text-cell"
+          >
+            1986
+          </label>
+        </div>
+        <div
+          class="c4 table__td"
+        >
+          <label
+            class="table__text-cell"
+          >
+            Indonesia
+          </label>
+        </div>
+        <div
+          class="c4 table__td"
+        >
+          <label
+            class="table__text-cell"
+          >
+            $8325.61
+          </label>
+        </div>
+        <div
+          class="c6 table__td"
+        >
+          <label
+            class="table__text-cell"
+          >
+            reinvent mission-critical channels
+          </label>
+        </div>
+      </div>
+      <div
+        class="c2 table__body-row"
+        style="position:absolute;left:0;top:432px;height:48px;width:100%"
+      >
+        <div
+          class="c3"
+        />
+        <div
+          class="c4 table__td"
+        >
+          <label
+            class="table__text-cell"
+          >
+            Ford
+          </label>
+        </div>
+        <div
+          class="c4 table__td"
+        >
+          <label
+            class="table__text-cell"
+          >
+            Escort
+          </label>
+        </div>
+        <div
+          class="c5 table__td"
+        >
+          <label
+            class="table__text-cell"
+          >
+            1985
+          </label>
+        </div>
+        <div
+          class="c4 table__td"
+        >
+          <label
+            class="table__text-cell"
+          >
+            China
+          </label>
+        </div>
+        <div
+          class="c4 table__td"
+        >
+          <label
+            class="table__text-cell"
+          >
+            $3609.57
+          </label>
+        </div>
+        <div
+          class="c6 table__td"
+        >
+          <label
+            class="table__text-cell"
+          >
+            maximize seamless ROI
+          </label>
+        </div>
+      </div>
+      <div
+        class="c2 table__body-row"
+        style="position:absolute;left:0;top:480px;height:48px;width:100%"
+      >
+        <div
+          class="c3"
+        />
+        <div
+          class="c4 table__td"
+        >
+          <label
+            class="table__text-cell"
+          >
+            Ford
+          </label>
+        </div>
+        <div
+          class="c4 table__td"
+        >
+          <label
+            class="table__text-cell"
+          >
+            F-Series
+          </label>
+        </div>
+        <div
+          class="c5 table__td"
+        >
+          <label
+            class="table__text-cell"
+          >
+            2007
+          </label>
+        </div>
+        <div
+          class="c4 table__td"
+        >
+          <label
+            class="table__text-cell"
+          >
+            Argentina
+          </label>
+        </div>
+        <div
+          class="c4 table__td"
+        >
+          <label
+            class="table__text-cell"
+          >
+            $4446.54
+          </label>
+        </div>
+        <div
+          class="c6 table__td"
+        >
+          <label
+            class="table__text-cell"
+          >
+            recontextualize world-class platforms
           </label>
         </div>
       </div>

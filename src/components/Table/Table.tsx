@@ -7,6 +7,7 @@ import React, {
   memo,
   ReactElement,
   useContext,
+  useCallback,
 } from "react"
 import { areEqual, ListItemKeySelector, VariableSizeList } from "react-window"
 import styled from "styled-components/macro"
@@ -22,6 +23,21 @@ interface TableProps<T extends CarDatum> {
   data: T[]
   columnDefinitions: ColumnDefinition<T>[]
   collapsedGroupPaths: string[]
+  // TODO
+  dispatch: DispatchHandler
+}
+
+export enum DispatchEvent {
+  OnCollapse,
+}
+
+export type DispatchActions = {
+  type: DispatchEvent.OnCollapse
+  path: string
+  collapsed: boolean
+}
+export interface DispatchHandler {
+  (action: DispatchActions): void
 }
 
 export enum RowType {
@@ -41,6 +57,7 @@ type GroupRowDatum = CommonRowData & {
   label: string
   depth: number
   collapsed: boolean
+  path: string
 }
 type BodyRowDatum<T extends CarDatum> = CommonRowData &
   T & {
@@ -97,35 +114,80 @@ const StyledList = memo(
     *:after {
       box-sizing: inherit;
     }
+    color: #4d4d4d;
   `,
   areEqual
 )
 
 const StyledRow = styled.div`
-  display: flex;
-  flex-flow: row nowrap;
-  margin: 0;
-  padding: 0;
-  align-items: center;
+  && {
+    display: flex;
+    flex-flow: row nowrap;
+    margin: 0;
+    padding: 0;
+    align-items: center;
+  }
 `
 
 const StyledCell = styled.div<{ flex: CSSProperties["flex"] }>`
-  flex: ${(props) => props.flex};
-  white-space: nowrap;
-  overflow: hidden;
-`
-
-const StyleCaratCell = styled(StyledCell)`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 11px;
+  && {
+    flex: ${(props) => props.flex};
+    white-space: nowrap;
+    overflow: hidden;
+  }
 `
 
 const GroupHeaderRowTitle = styled.div`
-  padding: 0;
-  font-weight: 700;
+  && {
+    padding: 0;
+    font-weight: 700;
+  }
 `
+
+const StyledCollapseButton = styled.button<{}>`
+  && {
+    flex: 0 0 48px;
+    white-space: nowrap;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 11px;
+    height: 100%;
+    height: 100%;
+    padding: 0;
+    margin: 0;
+    background: inherit;
+    border: none;
+    cursor: pointer;
+  }
+`
+interface CollapseButtonProps {
+  collapsed: boolean
+  path: string
+  className?: string
+}
+const CollapseButton = (props: CollapseButtonProps) => {
+  const dispatch = useContext(DispatchContext)
+
+  const handleClick = useCallback(() => {
+    dispatch({
+      type: DispatchEvent.OnCollapse,
+      path: props.path,
+      collapsed: !props.collapsed,
+    })
+  }, [dispatch, props.path, props.collapsed])
+
+  return (
+    <StyledCollapseButton onClick={handleClick} className={props.className}>
+      <i
+        className={cx("ci", "icon", "ci-chevron-right", {
+          "table__carat--expanded": !props.collapsed,
+        })}
+      ></i>
+    </StyledCollapseButton>
+  )
+}
 
 export function groupPaths<T extends CarDatum>(
   groupOrRows: BodyRowOrGroup<T>[]
@@ -211,6 +273,7 @@ export function flattenGroups<T extends CarDatum>(
         key,
         collapsed,
         label: groupOrRow.value.toString(),
+        path: key,
       }
       const children = collapsed
         ? []
@@ -246,16 +309,10 @@ function GroupHeaderRow<T extends CarDatum>(props: RowProps<T, GroupRowDatum>) {
       className={cx("table__group-row", "table__group-row__content")}
     >
       <StyledCell flex={`0 0 ${props.rowData.depth * 24}px`} />
-      <StyleCaratCell key={"chevron"} flex={"0 0 48px"}>
-        <i
-          className={cx(
-            "ci",
-            "icon",
-            "ci-chevron-right",
-            "table__carat--expanded"
-          )}
-        ></i>
-      </StyleCaratCell>
+      <CollapseButton
+        collapsed={props.rowData.collapsed}
+        path={props.rowData.path}
+      ></CollapseButton>
       <GroupHeaderRowTitle className={cx("table__group-row__title")}>
         {props.rowData.label}
       </GroupHeaderRowTitle>
@@ -267,6 +324,10 @@ const ColumnDefinitionsContext = createContext<ColumnDefinition<any>[]>([])
 ColumnDefinitionsContext.displayName = "ColumnDefinitionsContext"
 const TableDataContext = createContext<RowDatum<any>[]>([])
 TableDataContext.displayName = "TableDataContext"
+const DispatchContext = createContext<(action: DispatchActions) => void>(
+  () => {}
+)
+DispatchContext.displayName = "DispatchContext"
 
 const BodyRow = function BodyRow<T extends CarDatum>(
   props: RowProps<T, BodyRowDatum<T>>
@@ -277,7 +338,7 @@ const BodyRow = function BodyRow<T extends CarDatum>(
 
   return (
     <StyledRow style={props.style} className={cx("table__body-row")}>
-      <StyleCaratCell key={"chevron"} flex={"0 0 48px"}></StyleCaratCell>
+      <StyledCell key={"chevron"} flex={"0 0 48px"}></StyledCell>
       {columnDefinitions.map((columnDefinition) => (
         <StyledCell
           className={cx("table__td")}
@@ -305,20 +366,11 @@ function HeaderRow<T extends CarDatum>(props: RowProps<T, HeaderRowDatum>) {
       key={props.rowData.key}
       className={cx("table__head")}
     >
-      <StyleCaratCell
+      <CollapseButton
         className={cx("table__th")}
-        key={"chevron"}
-        flex={"0 0 48px"}
-      >
-        <i
-          className={cx(
-            "ci",
-            "icon",
-            "ci-chevron-right",
-            "table__carat--expanded"
-          )}
-        ></i>
-      </StyleCaratCell>
+        collapsed={false}
+        path={""}
+      ></CollapseButton>
 
       {columnDefinitions.map((columnDefinition) => (
         <StyledCell
@@ -371,23 +423,25 @@ export default function Table<T extends CarDatum>(
   const getItemKey: ListItemKeySelector = (index) => tableData[index].key
 
   return (
-    <ColumnDefinitionsContext.Provider value={props.columnDefinitions}>
-      <TableDataContext.Provider value={tableData}>
-        <AutoSizer initialDimensions={props.initialDimensions}>
-          {({ dimensions }) => (
-            <StyledList
-              height={dimensions.height}
-              itemCount={tableData.length}
-              itemSize={getItemSize}
-              width={dimensions.width}
-              className={cx("table__table")}
-              itemKey={getItemKey}
-            >
-              {RowSwitch}
-            </StyledList>
-          )}
-        </AutoSizer>
-      </TableDataContext.Provider>
-    </ColumnDefinitionsContext.Provider>
+    <DispatchContext.Provider value={props.dispatch}>
+      <ColumnDefinitionsContext.Provider value={props.columnDefinitions}>
+        <TableDataContext.Provider value={tableData}>
+          <AutoSizer initialDimensions={props.initialDimensions}>
+            {({ dimensions }) => (
+              <StyledList
+                height={dimensions.height}
+                itemCount={tableData.length}
+                itemSize={getItemSize}
+                width={dimensions.width}
+                className={cx("table__table")}
+                itemKey={getItemKey}
+              >
+                {RowSwitch}
+              </StyledList>
+            )}
+          </AutoSizer>
+        </TableDataContext.Provider>
+      </ColumnDefinitionsContext.Provider>
+    </DispatchContext.Provider>
   )
 }

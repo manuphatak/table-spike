@@ -1,6 +1,6 @@
 import { optionsKnob, withKnobs } from "@storybook/addon-knobs"
 import { prop } from "ramda"
-import React from "react"
+import React, { useState } from "react"
 import CAR_DATA from "../../fixtures/CAR_DATA"
 import Table from "./"
 import {
@@ -9,6 +9,8 @@ import {
   RowDefinitions,
   RowType,
   generateGroups,
+  DispatchHandler,
+  DispatchEvent,
 } from "./Table"
 
 export default {
@@ -42,17 +44,33 @@ export const Basic = () => {
     groupDefinitions,
     CAR_DATA
   )
-  const collapsedGroupPaths: string[] = [
+
+  const [collapsedGroupPaths, setCollapsedGroupPaths] = useState([
     JSON.stringify(["China"]),
     JSON.stringify(["Japan", "Ford"]),
-  ]
+  ])
 
+  const dispatch: DispatchHandler = (action) => {
+    switch (action.type) {
+      case DispatchEvent.OnCollapse:
+        ;(() => {
+          if (action.collapsed) {
+            setCollapsedGroupPaths([...collapsedGroupPaths, action.path])
+          } else {
+            setCollapsedGroupPaths(
+              collapsedGroupPaths.filter((path) => path !== action.path)
+            )
+          }
+        })()
+    }
+  }
   return (
     <Table
       data={CAR_DATA}
       groups={groups}
       columnDefinitions={columnDefinitions}
       collapsedGroupPaths={collapsedGroupPaths}
+      dispatch={dispatch}
     />
   )
 }

@@ -1,18 +1,18 @@
 import classnames from "classnames/bind"
-import { groupBy, map, pipe, prop, toPairs, unnest, compose } from "ramda"
+import { groupBy, map, pipe, toPairs, unnest } from "ramda"
 import React, {
+  createContext,
   CSSProperties,
   Key,
   memo,
   ReactElement,
-  createContext,
   useContext,
 } from "react"
 import { areEqual, ListItemKeySelector, VariableSizeList } from "react-window"
 import styled from "styled-components/macro"
+import CAR_DATA from "../../fixtures/CAR_DATA"
 import AutoSizer, { Dimensions } from "./AutoSizer"
 import styles from "./Table.module.scss"
-import CAR_DATA from "../../fixtures/CAR_DATA"
 
 const cx = classnames.bind(styles)
 
@@ -121,6 +121,11 @@ const StyleCaratCell = styled(StyledCell)`
   font-size: 11px;
 `
 
+const GroupHeaderRowTitle = styled.div`
+  padding: 0;
+  font-weight: 700;
+`
+
 export function addCommonRowData<T extends CarDatum>(
   rowDefinitions: RowDefinitions<T>,
   data: T[]
@@ -180,7 +185,7 @@ export function flattenGroups<T extends CarDatum>(
       const groupHeader: GroupRowDatum = {
         type: RowType.GroupHeader,
         height: 48,
-        depth: groupOrRow.path.length,
+        depth: groupOrRow.path.length - 1,
         key: JSON.stringify(groupOrRow.path),
         label: groupOrRow.value.toString(),
       }
@@ -209,6 +214,7 @@ function GroupHeaderRow<T extends CarDatum>(props: RowProps<T, GroupRowDatum>) {
       key={props.rowData.key}
       className={cx("table__group-row", "table__group-row__content")}
     >
+      <StyledCell flex={`0 0 ${props.rowData.depth * 24}px`} />
       <StyleCaratCell key={"chevron"} flex={"0 0 48px"}>
         <i
           className={cx(
@@ -219,7 +225,9 @@ function GroupHeaderRow<T extends CarDatum>(props: RowProps<T, GroupRowDatum>) {
           )}
         ></i>
       </StyleCaratCell>
-      <div className={cx("table__group-row__title")}>{props.rowData.label}</div>
+      <GroupHeaderRowTitle className={cx("table__group-row__title")}>
+        {props.rowData.label}
+      </GroupHeaderRowTitle>
     </StyledRow>
   )
 }

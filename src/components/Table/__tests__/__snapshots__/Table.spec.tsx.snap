@@ -56,6 +56,14 @@ exports[`render matches snapshot 1`] = `
   overflow: hidden;
 }
 
+.c7 {
+  -webkit-flex: 0 0 0px;
+  -ms-flex: 0 0 0px;
+  flex: 0 0 0px;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
 .c3 {
   -webkit-flex: 0 0 48px;
   -ms-flex: 0 0 48px;
@@ -75,6 +83,11 @@ exports[`render matches snapshot 1`] = `
   -ms-flex-align: center;
   align-items: center;
   font-size: 11px;
+}
+
+.c8 {
+  padding: 0;
+  font-weight: 700;
 }
 
 <div
@@ -158,6 +171,9 @@ exports[`render matches snapshot 1`] = `
         style="position:absolute;left:0;top:48px;height:48px;width:100%"
       >
         <div
+          class="c7"
+        />
+        <div
           class="c3"
         >
           <i
@@ -165,7 +181,7 @@ exports[`render matches snapshot 1`] = `
           />
         </div>
         <div
-          class="table__group-row__title"
+          class="c8 table__group-row__title"
         >
           Mercury
         </div>

@@ -335,7 +335,7 @@ describe("flattenGroups", () => {
           height: 48,
           key: JSON.stringify(["Chevrolet"]),
           label: "Chevrolet",
-          depth: 1,
+          depth: 0,
         },
         {
           type: RowType.Body,
@@ -354,7 +354,7 @@ describe("flattenGroups", () => {
           height: 48,
           key: JSON.stringify(["Cadillac"]),
           label: "Cadillac",
-          depth: 1,
+          depth: 0,
         },
         {
           type: RowType.Body,
@@ -397,7 +397,7 @@ describe("flattenGroups", () => {
           height: 48,
           key: JSON.stringify(["Ford"]),
           label: "Ford",
-          depth: 1,
+          depth: 0,
         },
         {
           type: RowType.Body,
@@ -424,14 +424,14 @@ describe("flattenGroups", () => {
           height: 48,
           key: JSON.stringify(["Chevrolet"]),
           label: "Chevrolet",
-          depth: 1,
+          depth: 0,
         },
         {
           type: RowType.GroupHeader,
           height: 48,
           key: JSON.stringify(["Chevrolet", "Camaro"]),
           label: "Camaro",
-          depth: 2,
+          depth: 1,
         },
         {
           type: RowType.Body,
@@ -450,14 +450,14 @@ describe("flattenGroups", () => {
           height: 48,
           key: JSON.stringify(["Cadillac"]),
           label: "Cadillac",
-          depth: 1,
+          depth: 0,
         },
         {
           type: RowType.GroupHeader,
           height: 48,
           key: JSON.stringify(["Cadillac", "Escalade EXT"]),
           label: "Escalade EXT",
-          depth: 2,
+          depth: 1,
         },
         {
           type: RowType.Body,
@@ -488,7 +488,7 @@ describe("flattenGroups", () => {
           height: 48,
           key: JSON.stringify(["Cadillac", "SRX"]),
           label: "SRX",
-          depth: 2,
+          depth: 1,
         },
         {
           type: RowType.Body,
@@ -507,14 +507,14 @@ describe("flattenGroups", () => {
           height: 48,
           key: JSON.stringify(["Ford"]),
           label: "Ford",
-          depth: 1,
+          depth: 0,
         },
         {
           type: RowType.GroupHeader,
           height: 48,
           key: JSON.stringify(["Ford", "Model T"]),
           label: "Model T",
-          depth: 2,
+          depth: 1,
         },
         {
           type: RowType.Body,

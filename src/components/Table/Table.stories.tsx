@@ -92,13 +92,15 @@ function TableState(props: TableStateProps) {
   )
 
   const tableData = useMemo(
-    () => generateTableData(collapsedGroupPaths, groups),
-    [collapsedGroupPaths, groups]
+    () => generateTableData(allGroupPaths, collapsedGroupPaths, groups),
+    [allGroupPaths, collapsedGroupPaths, groups]
   )
 
   const dispatch: DispatchHandler = useCallback((action) => {
+    console.log("action", action)
+
     switch (action.type) {
-      case DispatchEvent.OnCollapse:
+      case DispatchEvent.OnCollapseRow:
         ;(() => {
           if (action.collapsed) {
             setCollapsedGroupPaths((state) => [...state, action.path])
@@ -108,14 +110,22 @@ function TableState(props: TableStateProps) {
             )
           }
         })()
+        break
+      case DispatchEvent.OnCollapseAll:
+        ;(() => {
+          setCollapsedGroupPaths(action.collapsedGroupPaths)
+        })()
     }
   }, [])
+
+  const allGroupsCollapsed = collapsedGroupPaths === allGroupPaths
+
+  console.log("allGroupsCollapsed", allGroupsCollapsed)
 
   return (
     <Table
       tableData={tableData}
       columnDefinitions={columnDefinitions}
-      collapsedGroupPaths={collapsedGroupPaths}
       dispatch={dispatch}
     />
   )

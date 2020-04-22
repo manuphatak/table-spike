@@ -118,10 +118,6 @@ function TableState(props: TableStateProps) {
     }
   }, [])
 
-  const allGroupsCollapsed = collapsedGroupPaths === allGroupPaths
-
-  console.log("allGroupsCollapsed", allGroupsCollapsed)
-
   return (
     <Table
       tableData={tableData}

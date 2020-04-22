@@ -1,5 +1,5 @@
 import classnames from "classnames/bind"
-import { groupBy, map, pipe, toPairs, unnest } from "ramda"
+import { groupBy, map, pipe, toPairs, unnest, equals } from "ramda"
 import React, {
   createContext,
   CSSProperties,
@@ -8,6 +8,8 @@ import React, {
   ReactElement,
   useContext,
   useCallback,
+  useEffect,
+  useRef,
 } from "react"
 import { areEqual, ListItemKeySelector, VariableSizeList } from "react-window"
 import styled from "styled-components/macro"
@@ -19,10 +21,8 @@ const cx = classnames.bind(styles)
 
 interface TableProps<T extends CarDatum> {
   initialDimensions?: Dimensions
-  groups: BodyRowOrGroup<BodyRowDatum<T>>[]
-  data: T[]
   columnDefinitions: ColumnDefinition<T>[]
-  collapsedGroupPaths: string[]
+  tableData: RowDatum<T>[]
   // TODO
   dispatch: DispatchHandler
 }
@@ -93,7 +93,6 @@ interface RowSwitchProps {
 }
 
 interface RowProps<T extends CarDatum, U extends RowDatum<T>> {
-  index: number
   style: CSSProperties
   rowData: U
 }
@@ -144,7 +143,7 @@ const GroupHeaderRowTitle = styled.div`
   }
 `
 
-const StyledCollapseButton = styled.button<{}>`
+const StyledCollapseButton = styled(CollapseButton)`
   && {
     flex: 0 0 48px;
     white-space: nowrap;
@@ -160,6 +159,10 @@ const StyledCollapseButton = styled.button<{}>`
     background: inherit;
     border: none;
     cursor: pointer;
+
+    i {
+      transition: transform 150ms ease-in-out;
+    }
   }
 `
 interface CollapseButtonProps {
@@ -167,9 +170,9 @@ interface CollapseButtonProps {
   path: string
   className?: string
 }
-const CollapseButton = (props: CollapseButtonProps) => {
-  const dispatch = useContext(DispatchContext)
 
+function CollapseButton(props: CollapseButtonProps) {
+  const dispatch = useContext(DispatchContext)
   const handleClick = useCallback(() => {
     dispatch({
       type: DispatchEvent.OnCollapse,
@@ -177,15 +180,14 @@ const CollapseButton = (props: CollapseButtonProps) => {
       collapsed: !props.collapsed,
     })
   }, [dispatch, props.path, props.collapsed])
-
   return (
-    <StyledCollapseButton onClick={handleClick} className={props.className}>
+    <button onClick={handleClick} className={props.className}>
       <i
         className={cx("ci", "icon", "ci-chevron-right", {
           "table__carat--expanded": !props.collapsed,
         })}
       ></i>
-    </StyledCollapseButton>
+    </button>
   )
 }
 
@@ -283,7 +285,7 @@ export function flattenGroups<T extends CarDatum>(
     })
   )
 }
-function generateTableData<T extends CarDatum>(
+export function generateTableData<T extends CarDatum>(
   collapsedGroupPaths: string[],
   groups: BodyRowOrGroup<BodyRowDatum<T>>[]
 ): RowDatum<T>[] {
@@ -301,7 +303,9 @@ export function generateGroups<T extends CarDatum>(
   return createGroups(groupDefinitions, addCommonRowData(rowDefinitions, data))
 }
 
-function GroupHeaderRow<T extends CarDatum>(props: RowProps<T, GroupRowDatum>) {
+const GroupHeaderRow = memo(function GroupHeaderRow<T extends CarDatum>(
+  props: RowProps<T, GroupRowDatum>
+) {
   return (
     <StyledRow
       style={props.style}
@@ -309,16 +313,17 @@ function GroupHeaderRow<T extends CarDatum>(props: RowProps<T, GroupRowDatum>) {
       className={cx("table__group-row", "table__group-row__content")}
     >
       <StyledCell flex={`0 0 ${props.rowData.depth * 24}px`} />
-      <CollapseButton
+      <StyledCollapseButton
         collapsed={props.rowData.collapsed}
         path={props.rowData.path}
-      ></CollapseButton>
+      ></StyledCollapseButton>
       <GroupHeaderRowTitle className={cx("table__group-row__title")}>
         {props.rowData.label}
       </GroupHeaderRowTitle>
     </StyledRow>
   )
-}
+},
+equals)
 
 const ColumnDefinitionsContext = createContext<ColumnDefinition<any>[]>([])
 ColumnDefinitionsContext.displayName = "ColumnDefinitionsContext"
@@ -329,7 +334,7 @@ const DispatchContext = createContext<(action: DispatchActions) => void>(
 )
 DispatchContext.displayName = "DispatchContext"
 
-const BodyRow = function BodyRow<T extends CarDatum>(
+const BodyRow = memo(function BodyRow<T extends CarDatum>(
   props: RowProps<T, BodyRowDatum<T>>
 ) {
   const columnDefinitions = useContext<ColumnDefinition<T>[]>(
@@ -353,9 +358,12 @@ const BodyRow = function BodyRow<T extends CarDatum>(
       ))}
     </StyledRow>
   )
-}
+},
+areEqual)
 
-function HeaderRow<T extends CarDatum>(props: RowProps<T, HeaderRowDatum>) {
+const HeaderRow = memo(function HeaderRow<T extends CarDatum>(
+  props: RowProps<T, HeaderRowDatum>
+) {
   const columnDefinitions = useContext<ColumnDefinition<T>[]>(
     ColumnDefinitionsContext
   )
@@ -366,11 +374,11 @@ function HeaderRow<T extends CarDatum>(props: RowProps<T, HeaderRowDatum>) {
       key={props.rowData.key}
       className={cx("table__head")}
     >
-      <CollapseButton
+      <StyledCollapseButton
         className={cx("table__th")}
         collapsed={false}
         path={""}
-      ></CollapseButton>
+      ></StyledCollapseButton>
 
       {columnDefinitions.map((columnDefinition) => (
         <StyledCell
@@ -386,7 +394,9 @@ function HeaderRow<T extends CarDatum>(props: RowProps<T, HeaderRowDatum>) {
       ))}
     </StyledRow>
   )
-}
+},
+equals)
+
 const RowSwitch = memo(function RowSwitch<T extends CarDatum>(
   props: RowSwitchProps
 ): JSX.Element {
@@ -395,22 +405,12 @@ const RowSwitch = memo(function RowSwitch<T extends CarDatum>(
 
   switch (rowData.type) {
     case RowType.Header:
-      return (
-        <HeaderRow index={props.index} style={props.style} rowData={rowData} />
-      )
+      return <HeaderRow style={props.style} rowData={rowData} />
     case RowType.GroupHeader:
-      return (
-        <GroupHeaderRow
-          index={props.index}
-          style={props.style}
-          rowData={rowData}
-        />
-      )
+      return <GroupHeaderRow style={props.style} rowData={rowData} />
 
     case RowType.Body:
-      return (
-        <BodyRow index={props.index} style={props.style} rowData={rowData} />
-      )
+      return <BodyRow style={props.style} rowData={rowData} />
   }
 },
 areEqual)
@@ -418,19 +418,28 @@ areEqual)
 export default function Table<T extends CarDatum>(
   props: TableProps<T>
 ): ReactElement {
-  const tableData = generateTableData(props.collapsedGroupPaths, props.groups)
-  const getItemSize = (index: number): number => tableData[index].height
-  const getItemKey: ListItemKeySelector = (index) => tableData[index].key
+  const getItemSize = useCallback(
+    (index: number): number => {
+      return props.tableData[index].height
+    },
+    [props.tableData]
+  )
+  const getItemKey = useCallback(
+    (index: number): Key => {
+      return props.tableData[index].key
+    },
+    [props.tableData]
+  )
 
   return (
     <DispatchContext.Provider value={props.dispatch}>
       <ColumnDefinitionsContext.Provider value={props.columnDefinitions}>
-        <TableDataContext.Provider value={tableData}>
+        <TableDataContext.Provider value={props.tableData}>
           <AutoSizer initialDimensions={props.initialDimensions}>
             {({ dimensions }) => (
               <StyledList
                 height={dimensions.height}
-                itemCount={tableData.length}
+                itemCount={props.tableData.length}
                 itemSize={getItemSize}
                 width={dimensions.width}
                 className={cx("table__table")}

@@ -1,6 +1,6 @@
 import { optionsKnob, withKnobs } from "@storybook/addon-knobs"
-import { prop } from "ramda"
-import React, { useState } from "react"
+import { prop, intersection } from "ramda"
+import React, { useState, useCallback, useMemo } from "react"
 import CAR_DATA from "../../fixtures/CAR_DATA"
 import Table from "./"
 import {
@@ -11,6 +11,8 @@ import {
   generateGroups,
   DispatchHandler,
   DispatchEvent,
+  generateTableData,
+  groupPaths,
 } from "./Table"
 
 export default {
@@ -20,6 +22,11 @@ export default {
 }
 type ArrayInfer<T extends any[]> = T extends Array<infer U> ? U : never
 type CarDatum = ArrayInfer<typeof CAR_DATA>
+interface TableStateProps {
+  groupDefinitions: GroupDefinition<CarDatum>[]
+  rowDefinitions: RowDefinitions<CarDatum>
+  data: CarDatum[]
+}
 
 const columnDefinitions: ColumnDefinition<CarDatum>[] = [
   { dataKey: "car_make", label: "Car Make", flex: "1 0 100px" },
@@ -39,38 +46,12 @@ const rowDefinitions: RowDefinitions<CarDatum> = {
 
 export const Basic = () => {
   const groupDefinitions = groupDefinitionsKnob()
-  const groups = generateGroups<CarDatum>(
-    rowDefinitions,
-    groupDefinitions,
-    CAR_DATA
-  )
 
-  const [collapsedGroupPaths, setCollapsedGroupPaths] = useState([
-    JSON.stringify(["China"]),
-    JSON.stringify(["Japan", "Ford"]),
-  ])
-
-  const dispatch: DispatchHandler = (action) => {
-    switch (action.type) {
-      case DispatchEvent.OnCollapse:
-        ;(() => {
-          if (action.collapsed) {
-            setCollapsedGroupPaths([...collapsedGroupPaths, action.path])
-          } else {
-            setCollapsedGroupPaths(
-              collapsedGroupPaths.filter((path) => path !== action.path)
-            )
-          }
-        })()
-    }
-  }
   return (
-    <Table
+    <TableState
+      groupDefinitions={groupDefinitions}
+      rowDefinitions={rowDefinitions}
       data={CAR_DATA}
-      groups={groups}
-      columnDefinitions={columnDefinitions}
-      collapsedGroupPaths={collapsedGroupPaths}
-      dispatch={dispatch}
     />
   )
 }
@@ -88,4 +69,54 @@ function groupDefinitionsKnob(): GroupDefinition<CarDatum>[] {
     return []
   }
   return groupValues.map((value) => (data) => prop(value, data).toString())
+}
+
+function TableState(props: TableStateProps) {
+  const [groups, allGroupPaths] = useMemo(() => {
+    const _groups = generateGroups<CarDatum>(
+      props.rowDefinitions,
+      props.groupDefinitions,
+      props.data
+    )
+    return [_groups, groupPaths(_groups)] as const
+  }, [props.groupDefinitions, props.data, props.rowDefinitions])
+
+  const [_collapsedGroupPaths, setCollapsedGroupPaths] = useState([
+    JSON.stringify(["China"]),
+    JSON.stringify(["Japan", "Ford"]),
+  ])
+
+  const collapsedGroupPaths = useMemo(
+    () => intersection(allGroupPaths, _collapsedGroupPaths),
+    [allGroupPaths, _collapsedGroupPaths]
+  )
+
+  const tableData = useMemo(
+    () => generateTableData(collapsedGroupPaths, groups),
+    [collapsedGroupPaths, groups]
+  )
+
+  const dispatch: DispatchHandler = useCallback((action) => {
+    switch (action.type) {
+      case DispatchEvent.OnCollapse:
+        ;(() => {
+          if (action.collapsed) {
+            setCollapsedGroupPaths((state) => [...state, action.path])
+          } else {
+            setCollapsedGroupPaths((state) =>
+              state.filter((path) => path !== action.path)
+            )
+          }
+        })()
+    }
+  }, [])
+
+  return (
+    <Table
+      tableData={tableData}
+      columnDefinitions={columnDefinitions}
+      collapsedGroupPaths={collapsedGroupPaths}
+      dispatch={dispatch}
+    />
+  )
 }

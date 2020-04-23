@@ -165,12 +165,16 @@ const StyledCollapseButton = styled(CollapseButton)`
     align-items: center;
     font-size: 11px;
     height: 100%;
-    height: 100%;
     padding: 0;
     margin: 0;
     background: inherit;
     border: none;
     cursor: pointer;
+
+    &:focus {
+      outline-style: auto;
+      z-index: 1;
+    }
 
     i {
       transition: transform 150ms ease-in-out;
@@ -185,12 +189,12 @@ interface CollapseButtonProps {
 
 function CollapseButton(props: CollapseButtonProps) {
   return (
-    <button onClick={props.onClick} className={props.className}>
+    <button className={props.className} onClick={props.onClick} type="button">
       <i
         className={cx("ci", "icon", "ci-chevron-right", {
           "table__carat--expanded": !props.collapsed,
         })}
-      ></i>
+      />
     </button>
   )
 }
@@ -328,15 +332,17 @@ const GroupHeaderRow = memo(function GroupHeaderRow<T extends CarDatum>(
 
   return (
     <StyledRow
-      style={props.style}
-      key={props.rowData.key}
       className={cx("table__group-row", "table__group-row__content")}
+      key={props.rowData.key}
+      style={props.style}
     >
+      {/* TODO: shoud these be a cell renderer */}
       <StyledCell flex={`0 0 ${props.rowData.depth * 24}px`} />
       <StyledCollapseButton
-        onClick={handleClick}
         collapsed={props.rowData.collapsed}
-      ></StyledCollapseButton>
+        onClick={handleClick}
+      />
+
       <GroupHeaderRowTitle className={cx("table__group-row__title")}>
         {props.rowData.label}
       </GroupHeaderRowTitle>
@@ -362,14 +368,15 @@ const BodyRow = memo(function BodyRow<T extends CarDatum>(
   )
 
   return (
-    <StyledRow style={props.style} className={cx("table__body-row")}>
-      <StyledCell key={"chevron"} flex={"0 0 48px"}></StyledCell>
+    <StyledRow className={cx("table__body-row")} style={props.style}>
+      {/* TODO: should this be a cell renderer? */}
+      <StyledCell flex="0 0 48px" key="chevron" />
       {columnDefinitions.map((columnDefinition) => (
         <StyledCell
           className={cx("table__td")}
           // TODO figure out why TS believes this could be undefined
-          key={columnDefinition.dataKey as string}
           flex={columnDefinition.flex}
+          key={columnDefinition.dataKey as string}
         >
           <label className={cx("table__text-cell")}>
             {props.rowData[columnDefinition.dataKey]}
@@ -400,22 +407,23 @@ const HeaderRow = memo(function HeaderRow<T extends CarDatum>(
 
   return (
     <StyledRow
-      style={props.style}
-      key={props.rowData.key}
       className={cx("table__head")}
+      key={props.rowData.key}
+      style={props.style}
     >
+      {/* TODO: should this be a cell renderer */}
       <StyledCollapseButton
         className={cx("table__th")}
         collapsed={props.rowData.collapsed}
         onClick={handleClick}
-      ></StyledCollapseButton>
+      />
 
       {columnDefinitions.map((columnDefinition) => (
         <StyledCell
           className={cx("table__th")}
           // TODO figure out why TS believes this could be undefined
-          key={columnDefinition.dataKey as string}
           flex={columnDefinition.flex}
+          key={columnDefinition.dataKey as string}
         >
           <label className={cx("table__th__label")}>
             {columnDefinition.label}
@@ -435,11 +443,11 @@ const RowSwitch = memo(function RowSwitch<T extends CarDatum>(
 
   switch (rowData.type) {
     case RowType.Header:
-      return <HeaderRow style={props.style} rowData={rowData} />
+      return <HeaderRow rowData={rowData} style={props.style} />
     case RowType.GroupHeader:
-      return <GroupHeaderRow style={props.style} rowData={rowData} />
+      return <GroupHeaderRow rowData={rowData} style={props.style} />
     case RowType.Body:
-      return <BodyRow style={props.style} rowData={rowData} />
+      return <BodyRow rowData={rowData} style={props.style} />
   }
 },
 areEqual)
@@ -467,12 +475,12 @@ export default function Table<T extends CarDatum>(
           <AutoSizer initialDimensions={props.initialDimensions}>
             {({ dimensions }) => (
               <StyledList
+                className={cx("table__table")}
                 height={dimensions.height}
                 itemCount={props.tableData.length}
+                itemKey={getItemKey}
                 itemSize={getItemSize}
                 width={dimensions.width}
-                className={cx("table__table")}
-                itemKey={getItemKey}
               >
                 {RowSwitch}
               </StyledList>

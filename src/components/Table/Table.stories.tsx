@@ -49,9 +49,9 @@ export const Basic = () => {
 
   return (
     <TableState
+      data={CAR_DATA}
       groupDefinitions={groupDefinitions}
       rowDefinitions={rowDefinitions}
-      data={CAR_DATA}
     />
   )
 }
@@ -120,9 +120,9 @@ function TableState(props: TableStateProps) {
 
   return (
     <Table
-      tableData={tableData}
       columnDefinitions={columnDefinitions}
       dispatch={dispatch}
+      tableData={tableData}
     />
   )
 }

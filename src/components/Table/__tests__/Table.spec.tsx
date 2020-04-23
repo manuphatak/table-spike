@@ -11,6 +11,7 @@ import Table, {
   GroupDefinition,
   groupPaths,
   generateGroups,
+  generateTableData,
 } from "../Table"
 import CAR_DATA from "../../../fixtures/CAR_DATA"
 
@@ -42,17 +43,14 @@ describe("render", () => {
       groupDefinitions,
       CAR_DATA
     )
+
+    const tableData = generateTableData(groupPaths(groups), [], groups)
     const wrapper = render(
       <Table
-        data={CAR_DATA}
-        initialDimensions={{
-          height: 400,
-          width: 1600,
-        }}
-        groups={groups}
         columnDefinitions={columnDefinitions}
-        collapsedGroupPaths={[JSON.stringify(["Mercury"])]}
         dispatch={jest.fn()}
+        initialDimensions={{ height: 400, width: 1600 }}
+        tableData={tableData}
       />
     )
 

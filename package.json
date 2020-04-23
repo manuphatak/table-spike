@@ -18,6 +18,7 @@
     "@types/react-window": "^1.8.2",
     "@types/styled-components": "^5.1.0",
     "classnames": "^2.2.6",
+    "eslint": "^6.8.0",
     "ramda": "^0.27.0",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
@@ -63,9 +64,14 @@
   "eslintConfig": {
     "extends": [
       "react-app",
+      "plugin:react/all",
       "plugin:prettier/recommended"
     ],
     "rules": {
+      "react/destructuring-assignment": [
+        "error",
+        "never"
+      ],
       "no-restricted-imports": [
         "error",
         {
@@ -78,6 +84,27 @@
           "patterns": [
             "!styled-components/macro"
           ]
+        }
+      ],
+      "react/jsx-indent": "off",
+      "react/jsx-filename-extension": [
+        "error",
+        {
+          "extensions": [
+            ".tsx"
+          ]
+        }
+      ],
+      "react/jsx-max-props-per-line": "off",
+      "react/jsx-one-expression-per-line": "off",
+      "react/jsx-indent-props": "off",
+      "react/function-component-definition": "off",
+      "react/no-multi-comp": "off",
+      "react/forbid-component-props": "off",
+      "react/jsx-max-depth": [
+        "error",
+        {
+          "max": 4
         }
       ]
     }

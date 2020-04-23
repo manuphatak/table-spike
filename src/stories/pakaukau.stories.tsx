@@ -70,13 +70,13 @@ function TableState(props: TableStateProps) {
       <WithGrouping
         columnDefinitions={props.columnDefinitions as any}
         data={CAR_DATA}
-        groupBy={props.groupBy as any}
-        subtotalBy={props.subtotalBy}
         expandedGroups={expandedGroups}
-        onGroupsExpanded={setExpandedGroups}
-        expandGroupsByDefault={true}
+        expandGroupsByDefault
+        groupBy={props.groupBy as any}
         // @ts-ignore
         idField="id"
+        onGroupsExpanded={setExpandedGroups}
+        subtotalBy={props.subtotalBy}
       />
     </div>
   )
@@ -88,8 +88,8 @@ export const PakauauWithGrouping = () => {
   return (
     <TableState
       columnDefinitions={columnDefinitions}
-      subtotalBy={subtotalBy}
       groupBy={groupBy}
+      subtotalBy={subtotalBy}
     />
   )
 }

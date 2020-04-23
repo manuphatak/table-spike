@@ -11,13 +11,12 @@ import React, {
 } from "react"
 import { areEqual, VariableSizeList } from "react-window"
 import styled from "styled-components/macro"
-import CAR_DATA from "../../fixtures/CAR_DATA"
 import AutoSizer, { Dimensions } from "./AutoSizer"
 import styles from "./Table.module.scss"
 
 const cx = classnames.bind(styles)
 
-interface TableProps<T extends CarDatum> {
+interface TableProps<T> {
   initialDimensions?: Dimensions
   columnDefinitions: ColumnDefinition<T>[]
   tableData: RowDatum<T>[]
@@ -55,10 +54,7 @@ type CommonRowData = {
   height: number
   key: Key
 }
-type RowDatum<T extends CarDatum> =
-  | HeaderRowDatum
-  | BodyRowDatum<T>
-  | GroupRowDatum
+type RowDatum<T> = HeaderRowDatum | BodyRowDatum<T> | GroupRowDatum
 type HeaderRowDatum = CommonRowData & {
   type: RowType.Header
   collapsed: boolean
@@ -71,32 +67,27 @@ type GroupRowDatum = CommonRowData & {
   collapsed: boolean
   path: string
 }
-type BodyRowDatum<T extends CarDatum> = CommonRowData &
+type BodyRowDatum<T> = CommonRowData &
   T & {
     type: RowType.Body
   }
 
-type ArrayInfer<T extends any[]> = T extends Array<infer U> ? U : never
-type CarDatum = ArrayInfer<typeof CAR_DATA>
-type Group<T extends CarDatum> = {
+type Group<T> = {
   path: Key[]
   value: Key
   children: BodyRowOrGroup<T>[]
 }
 
-type BodyRowOrGroup<T extends CarDatum> = BodyRowDatum<T> | Group<T>
+type BodyRowOrGroup<T> = BodyRowDatum<T> | Group<T>
 
-export interface ColumnDefinition<T extends CarDatum> {
+export interface ColumnDefinition<T> {
   label: string
   dataKey: keyof T
   flex: CSSProperties["flex"]
 }
 
-export interface GroupDefinition<
-  T extends CarDatum,
-  U extends BodyRowDatum<T> = BodyRowDatum<T>
-> {
-  (data: U): Key
+export interface GroupDefinition<T> {
+  (data: BodyRowDatum<T>): Key
 }
 
 interface RowSwitchProps {
@@ -104,7 +95,7 @@ interface RowSwitchProps {
   style: CSSProperties
 }
 
-interface RowProps<T extends CarDatum, U extends RowDatum<T>> {
+interface RowProps<T, U extends RowDatum<T>> {
   style: CSSProperties
   rowData: U
 }
@@ -199,9 +190,7 @@ function CollapseButton(props: CollapseButtonProps) {
   )
 }
 
-export function groupPaths<T extends CarDatum>(
-  groupOrRows: BodyRowOrGroup<T>[]
-): string[] {
+export function groupPaths<T>(groupOrRows: BodyRowOrGroup<T>[]): string[] {
   return unnest(
     groupOrRows.map((groupOrRow) => {
       if (isBodyRow<T>(groupOrRow)) {
@@ -216,7 +205,7 @@ export function groupPaths<T extends CarDatum>(
   ).sort()
 }
 
-export function addCommonRowData<T extends CarDatum>(
+export function addCommonRowData<T>(
   rowDefinitions: RowDefinitions<T>,
   data: T[]
 ): BodyRowDatum<T>[] {
@@ -232,38 +221,33 @@ function asString<U>(fn: (a: U) => Key): (a: U) => string {
   return (data) => fn(data).toString()
 }
 
-export function createGroups<
-  T extends CarDatum,
-  U extends BodyRowDatum<T> = BodyRowDatum<T>
->(
+export function createGroups<T>(
   [groupDefinition, ...groupDefinitions]: GroupDefinition<T>[],
-  data: U[],
+  data: BodyRowDatum<T>[],
   parents: Key[] = []
-): BodyRowOrGroup<U>[] {
+): BodyRowOrGroup<BodyRowDatum<T>>[] {
   if (groupDefinition === undefined) {
     return data
   }
   return pipe(
-    groupBy<U>(asString(groupDefinition)),
+    groupBy<BodyRowDatum<T>>(asString(groupDefinition)),
     toPairs,
     map(([value, children]) => {
       const path = [...parents, value]
       return {
         value,
-        children: createGroups(groupDefinitions, children, path),
+        children: createGroups<T>(groupDefinitions, children, path),
         path,
       }
     })
   )(data)
 }
 
-function isBodyRow<T extends CarDatum>(
-  data: BodyRowOrGroup<T>
-): data is BodyRowDatum<T> {
+function isBodyRow<T>(data: BodyRowOrGroup<T>): data is BodyRowDatum<T> {
   return data.hasOwnProperty("type")
 }
 
-export function flattenGroups<T extends CarDatum>(
+export function flattenGroups<T>(
   collapsedGroupPaths: string[],
   groupOrRows: BodyRowOrGroup<T>[]
 ): (BodyRowDatum<T> | GroupRowDatum)[] {
@@ -293,7 +277,7 @@ export function flattenGroups<T extends CarDatum>(
     })
   )
 }
-export function generateTableData<T extends CarDatum>(
+export function generateTableData<T>(
   allGroupPaths: string[],
   collapsedGroupPaths: string[],
   groups: BodyRowOrGroup<BodyRowDatum<T>>[]
@@ -310,15 +294,18 @@ export function generateTableData<T extends CarDatum>(
   ]
 }
 
-export function generateGroups<T extends CarDatum>(
+export function generateGroups<T>(
   rowDefinitions: RowDefinitions<T>,
-  groupDefinitions: GroupDefinition<T, BodyRowDatum<T>>[],
+  groupDefinitions: GroupDefinition<T>[],
   data: T[]
 ): BodyRowOrGroup<BodyRowDatum<T>>[] {
-  return createGroups(groupDefinitions, addCommonRowData(rowDefinitions, data))
+  return createGroups<T>(
+    groupDefinitions,
+    addCommonRowData(rowDefinitions, data)
+  )
 }
 
-const GroupHeaderRow = memo(function GroupHeaderRow<T extends CarDatum>(
+const GroupHeaderRow = memo(function GroupHeaderRow<T>(
   props: RowProps<T, GroupRowDatum>
 ) {
   const dispatch = useContext(DispatchContext)
@@ -360,9 +347,7 @@ const DispatchContext = createContext<(action: DispatchActions) => void>(
 )
 DispatchContext.displayName = "DispatchContext"
 
-const BodyRow = memo(function BodyRow<T extends CarDatum>(
-  props: RowProps<T, BodyRowDatum<T>>
-) {
+const BodyRow = memo(function BodyRow<T>(props: RowProps<T, BodyRowDatum<T>>) {
   const columnDefinitions = useContext<ColumnDefinition<T>[]>(
     ColumnDefinitionsContext
   )
@@ -385,10 +370,9 @@ const BodyRow = memo(function BodyRow<T extends CarDatum>(
       ))}
     </StyledRow>
   )
-},
-areEqual)
+}, areEqual)
 
-const HeaderRow = memo(function HeaderRow<T extends CarDatum>(
+const HeaderRow = memo(function HeaderRow<T>(
   props: RowProps<T, HeaderRowDatum>
 ) {
   const columnDefinitions = useContext<ColumnDefinition<T>[]>(
@@ -435,7 +419,7 @@ const HeaderRow = memo(function HeaderRow<T extends CarDatum>(
 },
 equals)
 
-const RowSwitch = memo(function RowSwitch<T extends CarDatum>(
+const RowSwitch = memo(function RowSwitch<T>(
   props: RowSwitchProps
 ): JSX.Element {
   const tableData = useContext<RowDatum<T>[]>(TableDataContext)
@@ -452,9 +436,7 @@ const RowSwitch = memo(function RowSwitch<T extends CarDatum>(
 },
 areEqual)
 
-export default function Table<T extends CarDatum>(
-  props: TableProps<T>
-): ReactElement {
+export default function Table<T>(props: TableProps<T>): ReactElement {
   const getItemSize = useCallback(
     (index: number): number => {
       return props.tableData[index].height
